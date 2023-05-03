@@ -1,0 +1,71 @@
+{"properties": [
+  {
+    "name": "server.extraHttpPort",
+    "type": "java.lang.Integer",
+    "description": "Used for listening on port 80 when the main port is 433 in a Production environment."
+  },
+  {
+    "name": "server.redirectHttpToHttps",
+    "type": "java.lang.Boolean",
+    "description": "Redirects http requests to https when true. Used to redirect port 80 requests to 433 in a Production environment."
+  },
+  {
+    "name": "server.allowedOrigins",
+    "type": "java.lang.String",
+    "description": "Cross Origin Resource Sharing (CORS) allowed origins. Comma separated list of hosts. Allows HTML pages that didn't originate from the server to make WebSocket connections. Set to \"*\" or http://localhost:3000 for Development. For Production, don't set a value, so that only pages that originated from the server can make WebSocket connections."
+  },
+  {
+    "name": "server.botsWebsite",
+    "type": "java.lang.Boolean",
+    "description": "Redirect requests from any Bots to resources/static/bots/... when true."
+  },
+  {
+    "name": "server.sessionsDirectory",
+    "type": "java.lang.String",
+    "description": "Directory for saving session data in case of a server re-start."
+  },
+  {
+    "name": "database.driver",
+    "type": "java.lang.String",
+    "description": "Database driver class. e.g. com.mysql.cj.jdbc.Driver"
+  },
+  {
+    "name": "database.url",
+    "type": "java.lang.String",
+    "description": "Database URL. e.g. jdbc:mysql://localhost:3306/user_db"
+  },
+  {
+    "name": "database.username",
+    "type": "java.lang.String",
+    "description": "Database username."
+  },{
+    "name": "database.password",
+    "type": "java.lang.String",
+    "description": "Database password or a system environment variable enclosed in ${ and }. e.g. {BRILL_DATABASE_PWD}"
+  },
+  {
+    "name": "brill.apps.repo",
+    "type": "java.lang.String",
+    "description": "Git repository containing configuration data for apps."
+  },
+  {
+    "name": "brill.apps.local.repo.dir",
+    "type": "java.lang.String",
+    "description": "The local repository directory"
+  },
+  {
+    "name": "brill.apps.local.repo.skip.pull",
+    "type": "java.lang.Boolean",
+    "description": "Skip doing a repo pull on startup if true."
+  },
+  {
+    "name": "passwords.pepper",
+    "type": "java.lang.String",
+    "description": "The pepper string is added to passwords. Changing this value will invalidate all existing passwords that use the pepper."
+  },
+  {
+    "name": "passwords.allowClearText",
+    "type": "java.lang.Boolean",
+    "description": "Set to true to allow clear text passwords to be set initially in the database. When the user changes their password, its always hashed. The default is false."
+  }
+]}

@@ -1,0 +1,47 @@
+# These are some examples of commonly ignored file patterns.
+# You should customize this list as applicable to your project.
+# Learn more about .gitignore:
+#     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
+
+# Node artifact files
+node_modules/
+dist/
+
+# Sessions directory
+sessions/
+
+# Compiled Java class files
+*.class
+
+HELP.md
+.gradle
+bin/**
+build/**
+src/main/resources/static/**
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/java/**
+!**/src/test/**
+*.class
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/

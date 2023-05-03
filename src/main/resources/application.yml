@@ -1,0 +1,58 @@
+# application.yml - the configuration file for the Brill Server.
+#
+# Passwords should be supplied using system environemnt variables rather than entered directly. The system
+# environment variables need to be setup in the OS runtime environment, otherwise the server won't start. 
+# Avoid checking sensitive configuration values into git, as it can be tricky to remove them from the history.
+#
+---
+spring:
+   profiles: local
+   application:
+      name: brill_server
+server:
+   port: 8080
+   allowedOrigins: "*"
+   botsWebsite: true
+   sessionsDirectory: sessions
+database:
+   driver: com.mysql.cj.jdbc.Driver
+   url: jdbc:mysql://localhost:3306/user_db
+   username: ${BRILL_LOCAL_DATABASE_USERNAME}
+   password: ${BRILL_LOCAL_DATABASE_PWD}
+brill.apps:
+#    repo: git@bitbucket.org:brill-software/brill_apps.git
+    repo: git@bitbucket.org:brill-software/brill_apps_fork.git
+    local.repo:
+      dir: ../brill_workspace
+      skip.pull: false
+passwords.pepper: ${BRILL_LOCAL_PWDS_PEPPER}
+passwords.allowClearText: false
+
+
+---
+spring:
+   profiles: prod
+   application:
+      name: brill_server
+server:
+   port: 443
+   extraHttpPort: 80
+   redirectHttpToHttps: true
+   allowedOrigins:
+   botsWebsite: true
+   sessionsDirectory: sessions
+   ssl: 
+      key-alias: tomcat
+      key-store: ${BRILL_PROD_SERVER_SSL_KEY_STORE}
+      key-store-password: ${BRILL_PROD_SERVER_SSL_KEY_STORE_PWD}
+      key-store-provider: SUN
+      key-store-type: JKS
+database:
+   driver: com.mysql.cj.jdbc.Driver
+   url: jdbc:mysql://localhost:3306/user_db
+   username: ${BRILL_PROD_DATABASE_USERNAME}
+   password: ${BRILL_PROD_DATABASE_PWD}    
+brill.apps:
+    repo: git@bitbucket.org:brillsoftware/brill_apps.git
+    local.repo.dir: BrillAppsRepo  
+passwords.pepper: ${BRILL_PROD_PWDS_PEPPER}
