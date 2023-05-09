@@ -372,7 +372,7 @@ public class GitController {
             wsService.sendMessageToClient(session, "response", topic, result);
 
         } catch (Exception e) {
-            wsService.sendErrorToClient(session, topic, "Git get branche error:", e.getMessage() );
+            wsService.sendErrorToClient(session, topic, "Git get branch error:", e.getMessage() );
             log.error("Git get current branch exception: ", e);
         }
     }
@@ -487,6 +487,7 @@ public class GitController {
                     wsService.sendMessageToClient(subscriber.getSession(), "response", "git:commits:/", commits.toString());
                 }    
             }
+            wsService.sendClearErrorToClient(session, topic);
 
         } catch (MissingValueException e) {
             wsService.sendErrorToClient(session, topic, "No Commit Message", e.getMessage());

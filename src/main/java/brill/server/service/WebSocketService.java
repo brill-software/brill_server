@@ -160,6 +160,29 @@ public class WebSocketService {
             JsonObject jsonObj = jsonObjBuilder.add("content", contentObj).build();
             session.sendMessage(new TextMessage(jsonObj.toString()));
         } catch (IOException ioe) {
+            log.error(format("WebSocket sendErrorToClient exception: %s",ioe.getMessage()));
+        }
+    }
+
+    /**
+     * Clears any error message for a topic.
+     * 
+     * @param session
+     * @param topic
+     * @param title
+     * @param detail
+     * @param severity error, warning or info
+     */
+    public void sendClearErrorToClient(WebSocketSession session, String topic) {
+        try {
+            JsonObjectBuilder jsonObjBuilder = Json.createObjectBuilder();
+            jsonObjBuilder.add("event", "error");
+            if (topic.length() > 0) {
+                jsonObjBuilder.add("topic", topic);
+            }            
+            JsonObject jsonObj = jsonObjBuilder.add("content", JsonValue.NULL).build();
+            session.sendMessage(new TextMessage(jsonObj.toString()));
+        } catch (IOException ioe) {
             log.error(format("WebSocket sendMessageToClient exception: %s",ioe.getMessage()));
         }
     }
