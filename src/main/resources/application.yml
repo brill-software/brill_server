@@ -20,13 +20,13 @@ database:
    username: ${BRILL_LOCAL_DATABASE_USERNAME}
    password: ${BRILL_LOCAL_DATABASE_PWD}
 brill.apps:
-#    repo: git@bitbucket.org:brill-software/brill_apps.git
-    repo: git@bitbucket.org:brill-software/brill_apps_fork.git
-    local.repo:
+   # repo: git@bitbucket.org:brill-software/brill_apps.git
+   repo: git@bitbucket.org:brill-software/brill_apps_fork.git
+   local.repo:
       dir: ../brill_workspace
       skip.pull: false
 passwords.pepper: ${BRILL_LOCAL_PWDS_PEPPER}
-passwords.allowClearText: false
+passwords.allowClearText: true
 
 
 ---
@@ -49,7 +49,7 @@ server:
       key-store-type: JKS
 database:
    driver: com.mysql.cj.jdbc.Driver
-   url: jdbc:mysql://localhost:3306/user_db
+   url: jdbc:mysql://localhost:3306/brill_prod_db
    username: ${BRILL_PROD_DATABASE_USERNAME}
    password: ${BRILL_PROD_DATABASE_PWD}    
 brill.apps:
@@ -57,3 +57,4 @@ brill.apps:
     repo: git@bitbucket.org:brill-software/brill_apps_fork.git
     local.repo.dir: BrillAppsRepo  
 passwords.pepper: ${BRILL_PROD_PWDS_PEPPER}
+passwords.allowClearText: true

@@ -123,7 +123,7 @@ public class PasswordService {
             if (!allowClearText) {
                 // The users password is an initial setup password that is stored as clear text (not hashed) but the
                 // passwords.allowClearText configuration value in application.yaml is not defined or set to false.
-                throw new SecurityServiceException("Password reset required. Please ask the system administrator to reset your password.");
+                throw new SecurityServiceException("Password reset required. Please ask the system administrator to reset your password or to change the system config.");
             }
             String pwdPlusPepper = clearTextPassword + passwordsPepper;
             MessageDigest md = MessageDigest.getInstance( "SHA-256");

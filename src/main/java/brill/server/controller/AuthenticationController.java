@@ -284,15 +284,24 @@ public class AuthenticationController {
     /**
      * Removes the password. JsonObject is immutable and throws an exception if an attempt is made to do
      * a origin.remove("password"), so the object has to be copied to a new object minus the password.
+     * 
+     * Also forces the user to change their password if the password in the DB is stored as clear text.
+     * 
      */
     private static JsonObject removePassword(JsonObject origin){
+        boolean forcePwdChange = (origin.getString("password").length() < 30);
         JsonObjectBuilder builder = Json.createObjectBuilder();
         for (Map.Entry<String,JsonValue> entry : origin.entrySet()){
-            if (entry.getKey().equals("password")){
+            String key = entry.getKey();
+            JsonValue value = entry.getValue();
+            if (key.equals("password")){
                 continue;
-            } else {
-                builder.add(entry.getKey(), entry.getValue());
             }
+            if (forcePwdChange && key.equals("changePassword")) {
+                builder.add(key, "Y"); // Force the user to change their password.
+            } else {
+                builder.add(key, value);
+            } 
         }       
         return builder.build();
     }

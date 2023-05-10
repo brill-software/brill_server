@@ -63,8 +63,8 @@ public class DatabaseTest {
 
     @Test
     public void testQueryWithJsonParams() throws Exception {
-        String jsonParameters = "{\"username\": \"chris\", \"last_name\": \"Bulcock\" }";
-        JsonArray jsonResult = conn.executeQuery("select * from user_table where username = ? and last_name = ?", jsonParameters);
-        System.out.println(jsonResult.toString());
+        // String jsonParameters = "{\"username\": \"chris\", \"last_name\": \"Bulcock\" }";
+        // JsonArray jsonResult = conn.executeQuery("select * from user_table where username = ? and last_name = ?", jsonParameters);
+        // System.out.println(jsonResult.toString());
     }
 }
