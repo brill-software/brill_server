@@ -83,4 +83,5 @@ A new script can be created from a database using the Data Export tab in the MyS
 ## Links
 
 [Brill Software](https://www.brill.software "Brill Software")
+
 [Brill Software Developer Guide](https://brill_software/developers_guideBrill "Developers Guide")
