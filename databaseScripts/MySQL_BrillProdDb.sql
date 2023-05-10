@@ -68,7 +68,7 @@ CREATE TABLE `brill_cms_user` (
 
 LOCK TABLES `brill_cms_user` WRITE;
 /*!40000 ALTER TABLE `brill_cms_user` DISABLE KEYS */;
-INSERT INTO `brill_cms_user` VALUES (1,'admin','CMS Admin User','noreply@unkown.com','Production','git_read,git_write,file_read,file_write,cms_user,execute_sql','Y','N');
+INSERT INTO `brill_cms_user` VALUES (1,'admin','CMS Admin User','noreply@none.com','Production','git_read,git_write,file_read,file_write,cms_user,execute_sql','Y','N');
 /*!40000 ALTER TABLE `brill_cms_user` ENABLE KEYS */;
 UNLOCK TABLES;
 

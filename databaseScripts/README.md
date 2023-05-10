@@ -17,13 +17,13 @@ To run a script:
 - Start the Brill Server and login as **admin**.
 - Change the **admin** password.
 
-### MySQL_BrillDevDb.sql
+### MySQL_BrillLocalDb.sql
 
-Sets up a database call brill_dev_db with a user called **admin** and password **Development**.
+Sets up a database called brill_local_db with a user called **admin** and password **Development**.
 
 ### MySQL_BrillProdDb.sql
 
-Sets up a database call brill_prod_db with a user called **admin** and password **Production**.
+Sets up a database called brill_prod_db with a user called **admin** and password **Production**.
 
 ## Passwords pepper value
 

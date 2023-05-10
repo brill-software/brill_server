@@ -1,5 +1,5 @@
-CREATE DATABASE  IF NOT EXISTS `brill_dev_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `brill_dev_db`;
+CREATE DATABASE  IF NOT EXISTS `brill_local_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `brill_local_db`;
 -- MySQL dump 10.13  Distrib 8.0.29, for macos12 (x86_64)
 --
 -- Host: 127.0.0.1    Database: user_db
@@ -68,7 +68,7 @@ CREATE TABLE `brill_cms_user` (
 
 LOCK TABLES `brill_cms_user` WRITE;
 /*!40000 ALTER TABLE `brill_cms_user` DISABLE KEYS */;
-INSERT INTO `brill_cms_user` VALUES (1,'admin','CMS Admin User','noreply@unkown.com','Development','git_read,git_write,file_read,file_write,cms_user,execute_sql','Y','N');
+INSERT INTO `brill_cms_user` VALUES (1,'admin','CMS Admin User','noreply@none.com','Development','git_read,git_write,file_read,file_write,cms_user,execute_sql','Y','N');
 /*!40000 ALTER TABLE `brill_cms_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
