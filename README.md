@@ -75,7 +75,7 @@ logging:
 Note that sensitive values such as the database username and password are passed in as operating system environment variables. These need to
 be configured in the startup script, shell or terminal configuration file.
 
-Hover of each of the values in the **application.yml** file for a description of each values.
+In Visual Studio Code, use the mouse to hover over each of the values in the **application.yml** file to see a description.
 
 See the [Brill Software Developer Guide](https://www.brill.software/brill_software/developers_guide "Developers Guide") for more details..
 
