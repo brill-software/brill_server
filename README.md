@@ -197,9 +197,9 @@ Create a file called **brill.server.plist** in **/Library/LaunchDaemons**
             <key>BRILL_PROD_DATABASE_USERNAME</key>
             <string>brillserver</string>
             <key>BRILL_PROD_DATABASE_PWD</key>
-            <string>Mysql2344g</string>
+            <string>databasePwd</string>
             <key>BRILL_PROD_PWDS_PEPPER</key>
-            <string>ZchtRd128c</string>
+            <string>pepperString</string>
         </dict>
     <key>Program</key>           <string>/usr/bin/java</string>
     <key>ProgramArguments</key>
