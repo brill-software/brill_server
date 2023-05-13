@@ -2,7 +2,7 @@
 
 The Brill Server is part of the Brill Framework. The Brill Server is a Spring Boot application
 written in Java, that runs on a server machine. The Brill Server communications with Brill Clients
-using the Brill Middleware.
+using the [Brill Middleware](https://brill.software/brill_software/middleware "Brill Middleware").
 
 
 ## Git Repository
@@ -215,6 +215,7 @@ Create a file called **brill.server.plist** in **/Library/LaunchDaemons**
 </dict>
 </plist>
 ```
+
 Put the git access public and private key into the **.ssh** directory
 
 Re-boot the machine. Check that the Brill Server starts. Access the system using a web browser and check the log file for errors.
