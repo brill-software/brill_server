@@ -4,18 +4,17 @@ The Brill Server is part of the Brill Framework. The Brill Server is a Spring Bo
 written in Java, that runs on a server machine. The Brill Server communications with Brill Clients
 using the [Brill Middleware](https://brill.software/brill_software/middleware "Brill Middleware").
 
-
 ## Git Repository
 
-The master copy of the Brill Server project is kept at 
+The master copy of the Brill Server project is kept at
 
-- Bitbucket (git@bitbucket.org:brill-software/brill_server.git)
+* Bitbucket (git@bitbucket.org:brill-software/brill\_server.git)
 
 The project is also available from:
 
-- Sourceforce (git://git.code.sf.net/p/brill-software/brill_server)
-- GitLab (git@gitlab.com:brill-software/brill_server.git)
-- GitHub (git@github.com:brill-software/brill_server.git)
+* Sourceforce (git://git.code.sf.net/p/brill-software/brill\_server)
+* GitLab (git@gitlab.com:brill-software/brill\_server.git)
+* GitHub (git@github.com:brill-software/brill\_server.git)
 
 To make changes, you either need permission to write to the Bitbucket repository or create a fork repository.
 You can create a fork repository on Bitbucket, Sourceforge, GitLab, GitHub, AWS CodeCommit or your own Git Server.
@@ -32,8 +31,8 @@ The Spring Boot Profile environment variable is set in `.vscode/launch.json` or 
 
 The Spring Boot Profile can be one of:
 
-* `local` - Local workstation for development purposes
-* `prod` - Production
+* `local` \- Local workstation for development purposes
+* `prod` \- Production
 
 Other Profiles can be defined. For example `dev`, `test`, `integration`.
 
@@ -99,7 +98,7 @@ bootRun {
 
 Before building the Brill Server, the Brill Client must be built first. The Brill Client build process creates a
 build driectory and subdirectories that contain HTML pages, JavaScript and other resource files. The Brill Client
-build directory has to be copied over to Brill Server static content directory. The Brill Server acts as a Web Server 
+build directory has to be copied over to Brill Server static content directory. The Brill Server acts as a Web Server
 and also handles WebSocket connections on the same port number.
 
 #### Building the JAR
@@ -116,7 +115,7 @@ java -jar -Dspring.profiles.active=prod  build/libs/brill_server-0.0.1-SNAPSHOT.
 
 #### Generateing a Self Signed Certificate
 
-Normally the **local** profile is configured to use *HTTP* and the **prod** profile to use *HTTPS*. For *HTTPS*, a Digital Certificate is 
+Normally the **local** profile is configured to use *HTTP* and the **prod** profile to use <em>HTTPS</em>. For <em>HTTPS</em>, a Digital Certificate is
 required that was signed by a Certification Authority. For initial setup and test purposes, a self signed certificate can be used. A
 self signed certificate can be generated as follows:
 
@@ -156,7 +155,7 @@ Generating 2,048 bit RSA key pair and self-signed certificate (SHA256withRSA) wi
 
 #### Running the Production JAR on MacOS
 
-Create a user called **brillserver**. 
+Create a user called <strong>brillserver</strong>.
 
 ```
 su - brillserver

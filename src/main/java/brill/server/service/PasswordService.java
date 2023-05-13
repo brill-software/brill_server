@@ -49,14 +49,14 @@ public class PasswordService {
     String passwordsPepper;
 
     // When true, passwords can be manually entered as clear text in the database. This is for initially setting up a new user database.
-    // The changePassword field should be set to 'Y', to force the user to change their password. Once changed, the password will be stored
+    // On next login the user is forced to change their password. Once changed, the password will be stored
     // using a PBKDF2WithHmacSHA384 hash.
     @Value("${passwords.allowClearText:false}")
     Boolean allowClearText;
 
     /**
      * Static method for use by the JavaScript helper class Db.java to hash passwords. The JavaScript Helper classes can't 
-     * make use of Spring Boot dependancy injection but can call static methods within a @Service class.
+     * make use of Spring Boot dependancy injection but can call static methods within an @Service class.
      */
     public static String hashPasswordForJavaScript(String username, String password) throws SecurityServiceException {
         return hash(username, password);
@@ -110,7 +110,7 @@ public class PasswordService {
     /**
      * When the stored password length is less than 30, it's assumed that the password is stored as clear text. The password from the
      * client has already had the pepper added and hashed using SHA-256. So we need to do the same to the clear text password
-     * before its can be compared with the password from the client.
+     * before it can be compared with the password from the client.
      * 
      * @param username
      * @param originalPassword

@@ -2,7 +2,6 @@
 #
 # Passwords should be supplied using system environemnt variables rather than entered directly. The system
 # environment variables need to be setup in the OS runtime environment, otherwise the server won't start. 
-# Avoid checking sensitive configuration values into git, as it can be tricky to remove them from the history.
 #
 ---
 spring:
