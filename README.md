@@ -1,7 +1,7 @@
 # Brill Server
 
 The Brill Server is part of the Brill Framework. The Brill Server is a Spring Boot application
-written in Java, that runs on s Server. The Brill Server communications with Brill Clients
+written in Java, that runs on server machine. The Brill Server communications with Brill Clients
 using the Brill Middleware.
 
 
@@ -13,12 +13,12 @@ The master copy of the Brill Server project is kept at
 
 The project is also available from:
 
-- Sourceforce (ssh://chrisbulcock@git.code.sf.net/p/brill-software/brill_server)
+- Sourceforce (git://git.code.sf.net/p/brill-software/brill_server)
 - GitLab (git@gitlab.com:brill-software/brill_server.git)
 - GitHub (git@github.com:brill-software/brill_server.git)
 
-To make changes, you either need permission to write to the Bitbucket repository or you need to create a fork.
-
+To make changes, you either need permission to write to the Bitbucket repository or create a fork repository.
+You can create a fork repository on Bitbucket, Sourceforge, GitLab, GitHub, AWS CodeCommit or your own Git Server.
 
 ## Brill Server Configuration
 
