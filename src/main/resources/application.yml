@@ -20,14 +20,17 @@ database:
    username: ${BRILL_LOCAL_DATABASE_USERNAME}
    password: ${BRILL_LOCAL_DATABASE_PWD}
 brill.apps:
-   # repo: git@bitbucket.org:brill-software/brill_apps.git
+   #repo: git@bitbucket.org:brill-software/brill_apps.git
    repo: git@bitbucket.org:brill-software/brill_apps_fork.git
    local.repo:
       dir: ../brill_workspace
       skip.pull: false
 passwords.pepper: ${BRILL_LOCAL_PWDS_PEPPER}
 passwords.allowClearText: true
-
+logging:
+    level:
+        web: INFO
+        brill: TRACE
 
 ---
 spring:

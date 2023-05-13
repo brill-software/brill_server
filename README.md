@@ -1,145 +1,91 @@
-# Brill Enterprise Server
+# Brill Server
 
-#### TODO list
+The Brill Server is part of the Brill Framework. The Brill Server is a Spring Boot application
+written in Java, that runs on s Server. The Brill Server communications with Brill Clients
+using the Brill Middleware.
 
-
-1. Image display for confluence pages
-2. Process confluence page as XML
-3. Remove old material_ui_lib components
-3. Remove hard coding of database on the server
-4. CMS - select application
-5. CMS Edit page - initial with drag and drop
-6. CMS save of page
-7. 
-8. 
-9. 
-10. 
-11. 
-
-## Licenses
-
-The Brill Framework (Client, Middleware and Server) is distributed under the MIT license. See the LICENSE file.
-
-The MIT license is a widely used license that is a short simple permissive license with conditions only requiring preservation of copyright and 
-license notices. Licensed works, modifications, and larger works may be distributed under different terms and without source code.
-
-You may wish to mark any code modification you make with your own copyright and license details. For example:
-
-// Original: © 2021 Brill Software Limited - Brill Framework, distributed under the MIT license.
-// Modifications: © 2021 Trading Enterprises Inc. - Trader project, covered by the Trader Enterprices Inc. Proprietary license.
-
-You don't need to identify the exact lines of code that were changed. These can be identified using Git and a differences tool.
-
-New modules and files that you create only need to contain your own copyright message.
-
-It would be appreciated if you were able to make any generic fixes and changes under the MIT license, so that they could be 
-included into future releases of the Brill Framework.
 
 ## Git Repository
 
-### Cloning the repository
+The master copy of the Brill Server project is kept at 
 
-Before cloning the repository you will need to create a public/private key pair in ~/.ssh and add the private
-key to Git Bucket to handle authentication. Use of a username and password is not supported.
+- Bitbucket (git@bitbucket.org:brill-software/brill_server.git)
 
-See https://confluence.atlassian.com/bitbucket/set-up-an-ssh-key-728138079.html for details on creating the keypair and adding the
-private key to Git Bucket.
+The project is also available from:
 
-You can then clone the repository with:
+- Sourceforce (ssh://chrisbulcock@git.code.sf.net/p/brill-software/brill_server)
+- GitLab (git@gitlab.com:brill-software/brill_server.git)
+- GitHub (git@github.com:brill-software/brill_server.git)
 
-`git clone git@bitbucket.org:brillsoftware/brill_enterprise_server.git`
+To make changes, you either need permission to write to the Bitbucket repository or you need to create a fork.
 
-## Respository private key OPENSSH not supported ( MacOS only )
-
-On MacOS the public/private key format need to be converted from OPENSSH format to RSA format.
-
-Check that `~/.ssh/id_rsa` starts wtih:
-
-`-----BEGIN OPENSSH PRIVATE KEY-----`
-
-To convert to RSA format use the command:
-
-`ssh-keygen -p -f id_rsa -m pem -P "<passphrase>" -N "<passphrase>"`
-
-Use a passphrase of `""` to set no passphrase. Setting of a passphrase is not supported.
-
-After converting the private key check that the `~/.ssh/id_rsa` starts with:
-
-`-----BEGIN RSA PRIVATE KEY-----`
-
-
-git rm --cached "brill_server/bin/main/brill/server/service/GitService*.class" 
-
-### Git branching strategy
-
-See https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
-
-To merge develop into master and create a tagged release:
-
-```
-git checkout master
-git merge develop
-git push
-git tag -a v0.1 -m "Version 0.1"
-git push origin v0.1
-```
 
 ## Brill Server Configuration
 
+The Brill Server acts as a web server and listens for HTTP requests on a port. When the Brill Server starts, a Spring
+Boot Profile is passed into the process. This Spring Boot Profile is used to get the HTTP port number and other configuration
+parameters from the **application.yml** file.
+
 ### Spring boot profile
 
-The spring boot profile environment variable is set in `.vscode/launch.json` or can be passed as a command line parameter.
+The Spring Boot Profile environment variable is set in `.vscode/launch.json` or can be passed as a command line parameter.
 
+The Spring Boot Profile can be one of:
 
 * `local` - Local workstation for development purposes
-* `dev` - Development environment
-* `int` - Integration environment
-* `acceptance` - Acceptance environment
-* `pref` - Performance testing environment
-* `uat` - User Acceptance Test environment
 * `prod` - Production
 
-Mutiple profiles can be specified. e.g. `local,test`.
+Other Profiles can be defined. For example 'dev', 'test', 'integration'.
 
 ### Application.yml file
 
-All app and configuration data is held in a Git repository. On startup the Brill Server needs to know the location of the remote and local Git repositories. This is held in the application.yml file.
+All configuration values are held in the */src/resources/application.yml* file
 
-The brill.apps git repo holds configuration details of the applications and configuration information for accessing and querying the database.
-
-This is an example of a section of the application.yml file to configure the local environment profile.
+This is an example of a section of the application.yml file to configure for the *local* Spring Boot profile.
 
 ```
 ---
 spring:
    profiles: local
    application:
-      name: brillserver
+      name: brill_server
 server:
    port: 8080
+   allowedOrigins: "*"
+   botsWebsite: true
+   sessionsDirectory: sessions
+database:
+   driver: com.mysql.cj.jdbc.Driver
+   url: jdbc:mysql://localhost:3306/user_db
+   username: ${BRILL_LOCAL_DATABASE_USERNAME}
+   password: ${BRILL_LOCAL_DATABASE_PWD}
 brill.apps:
-    repo: git@bitbucket.org:brillsoftware/brill_demo_app.git
-    local.repo.dir: /Users/chrisbulcock/BrillAppsRepo
-    skip.repo.pull: true
-
+   repo: git@bitbucket.org:brill-software/brill_apps_fork.git
+   local.repo:
+      dir: ../brill_workspace
+      skip.pull: false
+passwords.pepper: ${BRILL_LOCAL_PWDS_PEPPER}
+passwords.allowClearText: true
 logging:
     level:
         web: INFO
         brill: TRACE
 ```
 
+Note that sensitive values such as the database username and password are passed in as OS environment variables. These need to
+be configured in you shell or terminal configuration file.
+
 #### Property brill.apps.repo.git
 
-This is the location of the Git Bucket repository that holds the apps configuration data. Only SSH access is supported and this requires a public and private key to exist in the `~/.ssh` directory. HTTPS is not supported as this is less secure and would require configuration of a username and password.
+This is the location of the Git Bucket repository that holds the apps pages and resource. Only SSH access is supported and this requires a public and private key to exist in the `~/.ssh` directory. HTTPS is not supported as this is less secure and would require configuration of a username and password.
 
 #### Property brill.apps.local.repo.dir
 
-This is the directory to store a local copy of the repository. One start up of the Brill Server for the first time, the repository is cloned from the remote repository. On subsequent startups a `git pull` is performed.
+This is the directory to store a local copy of the repository. On start up of the Brill Server for the first time, the repository is cloned from the remote repository. On subsequent startups a `git pull` is performed.
 
 #### Property brill.apps.skip.repo.pull
 
-The "git pull" on startup can be turned off by setting the `brill.apps.skip.repo.pull` property to `true`. This is useful for local development, where the server is fequently restarted and a fast restart is useful. It can also be used to work offline when there's internet connection for accessing the remote git repository.
-
+The "git pull" on startup can be turned off by setting the `brill.apps.skip.repo.pull` property to `true`. It can be used to work offline when there's no internet connection for accessing the remote git repository.
 
 #### Running the spring boot process
 
@@ -153,24 +99,34 @@ The profile is set in build.graddle. For example to set dev as the profile:
 
 ```
 bootRun {
-    systemProperty "spring.profiles.active", "dev"
+    systemProperty "spring.profiles.active", "local"
 }
 ```
 
 ### Production build
 
+Before building the Brill Server, the Brill Client must be built first. The Brill Client build process creates a
+build driectory and subdirectories that contain HTML pages, JavaScript files and other resrouces. The Brill Client
+build directory has to be copied over Brill Server static content directory. The Brill Server acts as a Web Server and
+also handles WebSocket connections on the same port number. This eliminates the need for a Reverse Proxy Server.
+
 #### Building the JAR
 
 ```
- ./gradlew clean build
+ ./gradlew clean copyWebApp build
 ```
+
+To run the process from the command line use:
 
 ```
 java -jar -Dspring.profiles.active=prod  build/libs/brill_server-0.0.1-SNAPSHOT.jar
 ```
 
+#### Generateing a Self Signed Certificate
 
-#### Generate self signed certificate
+Normally the *local* profile is configured to use *HTTP* and the *prod* profile to use *HTTPS*. For *HTTPS*, a Digital Certificate is 
+required that was signed by a Certification Authority. For initial setup and test purposes, a self signed certificate can be used. A
+self signed certificate can be created as follows:
 
 ```
 keytool -genkey -alias selfsigned_localhost_sslserver -keyalg RSA -keysize 2048 -validity 700 -keypass changeit -storepass changeit -keystore ssl-server.jks
@@ -178,7 +134,10 @@ keytool -genkey -alias selfsigned_localhost_sslserver -keyalg RSA -keysize 2048 
 
 #### Generating a CSR
 
-brillserver@brill1 BrillServer % keytool -genkey -keysize 2048 -keyalg RSA -alias tomcat -keystore brill_2021_keystore.jks
+To get a proper CA signed Digital Certificate you will need to contact your domain name provider or a Certification Authority. Follow their
+instructions. Typically they will require a CSR that is generated on the Server Machine. The following is an example of generating a CSR:
+
+brillserver@brill1 BrillServer % keytool -genkey -keysize 2048 -keyalg RSA -alias tomcat -keystore brill_keystore.jks
 Enter keystore password:  
 Re-enter new password: 
 What is your first and last name?
@@ -205,20 +164,22 @@ brillserver@brill1 BrillServer %
 ```
 
 
-#### Running the Production JAR
+#### Running the Production JAR on MacOS
 
 Create a user called brillserver
 
-su brillserver
-cd
+```
+su - brillserver
 mkdir BrillServer
+```
 
-Copy the Build Jar file to BrillServer.
+Copy the Build Jar file to **BrillServer** directory.
 
-Create brill.server.plist in /Library
+Create brill.server.plist in **/Library/LaunchDaemons**
 
-Put the git access credentials into the .ssh directory
+Put the git access public and private key into the **.ssh** directory
 
+```
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -239,6 +200,19 @@ Put the git access credentials into the .ssh directory
     <key>UserName</key>          <string>brillserver</string>
     <key>GroupName</key>         <string>staff</string>
     <key>ExitTimeOut</key>       <integer>600</integer>
+    <key>EnvironmentVariables</key>
+        <dict>
+            <key>BRILL_PROD_SERVER_SSL_KEY_STORE</key>
+            <string>brill_keystore.jks</string>
+            <key>BRILL_PROD_SERVER_SSL_KEY_STORE_PWD</key>
+            <string>changeme</string>
+            <key>BRILL_PROD_DATABASE_USERNAME</key>
+            <string>brillserver</string>
+            <key>BRILL_PROD_DATABASE_PWD</key>
+            <string>Mysql2344g</string>
+            <key>BRILL_PROD_PWDS_PEPPER</key>
+            <string>ZchtRd128c</string>
+        </dict>
     <key>Program</key>           <string>/usr/bin/java</string>
     <key>ProgramArguments</key>
         <array>
@@ -252,84 +226,24 @@ Put the git access credentials into the .ssh directory
     <key>StandardOutPath</key> <string>/Users/brillserver/BrillServer/log.out</string>
 </dict>
 </plist>
+```
 
 Re-boot the machine.
 
 ### Stoping and restarting the Server
 
+```
 sudo launchctl unload /Library/LaunchDaemons/brill.server.plist
 
 sudo launchctl load /Library/LaunchDaemons/brill.server.plist
-
-### Removing file from git
-
-Sometimes files get committed to git when they shouldn't be. To remove a file from git use:
-
-```
-git rm --cached <fileToRemove>
 ```
 
-## WebSockets and the Brill subscribe/publish protocol
+## Documentation
 
-### Overview
-All communication between the Client and Server is using WebSockets. With REST the Client sends a request using a
-GET, PUT or POST and recevies back a response with a HTTP Status code. A TCP/IP connection is opened and closed for 
-each REST request. With WebSockets the connection remains continuously open and
-is bi-directional. The Server can send messages to the Client at any time and vice versa. There are no request/response
-message pairs. The Server could say send 10 messages to the Client and not require any response from the Client.
+[Brill Software Developer Guide](https://www.brill.software/brill_software/developers_guide "Developers Guide")
 
-WebSockets allows the Server to notify interested Clients of changes to Server data, without the need for polling. 
-It simplifies the Client and Server code. There's no need for the Server to produce an immediate response to a request and
-the Client code doesn't have to wait for the reponse. This fits in well with the JavaScript / React approach of using
-callbacks to process messages when they are received.
+[Brill Software Middleware](https://brill.software/brill_software/middleware "Brill Middleware")
 
+## Licensing
 
-### Overview
-The Brill Client application implements a Message Broker that maintains a list of subscriptions. A WebScoket
-is used as a bridge to the Server. Whenever there's a subsciption to a Topic that starts with a "/" character, the
-subscription is passed to the Server. The Server maintains a git repository of Topics and Content. Should the Server
-receive a 
-
-
-### Topics, Subscriptions and Publishers
-Think of a Topic as as the name of something that you're interested in and want to subscribe to. Take the example
-of a magazine. You might subscribe to the "Crane World" magazine. You send a Subscription request to the Publisher via 
-the Post Office (a Message Broker). When the Publisher receives your Subscription request they post back a copy of the latest
-magazine. Next month when the new edition comes out, the Publisher sends you the new edition. This would carry on 
-each month until you cancel your subscription or stop the credit card payments.
-
-Topic: The name of the item of interest. A Topic starting with a "/" is briged to the Server, others just stay on the Client. For the "Crane World" we need to use the Post Office as a bridge to the Publisher and therefore the Topic will start with a "/".
-
-Content: The data, message or value that corresponds to the Topic. Or the "Crane World" magazine.
-
-Subscribe event: A notification to the Message Broker that the Client wants to know the Topic. The Client will provide a callback function to be called with the first edition of the content and called again when a Publisher updates the content. 
-
-Publish event: An update to a Topic with new content. Any Subscribers will be notified of the update.
-
-Unscubscribe event: A notification to the Message Broker that the Client is no longer interested in the Topic. Very important as you don't want end up with piles of unwanted magazies.
-
-Authenticate event: We can't allow jut anyone to subscribe to any Topic or worse publish to any Topic. We need to know who they are and what their priveleges are. You need an account and to pay to receive "Crane World".
-
-Topic Extension: Topics are like file names where the last part after the dot indicates the Content type. e.g. A Topic of "/crane_world/magazine.json" has JSON content. 
-
-The Message Broker and Server use JSON most of the time. When content is not of type JSON, actions are taken to produce JSON from it. With JavaScript (.js) content, the Server executes the JavaScript to produce JSON. Various checks are required before running the JavaScript on the Server
-and the JavaScript runs in a Sandbox. The result is JSON that's published.
-
-Sometimes a Topic might have a very large amount of content and the Client only wants a small portion. To restrict the content, a subscription can include a Filter. The Filter limits
-the content to that of interest.
-
-
-
-
-
-.js Only execute is filter contains {exeute=true}
-if (execute is false, return the content base 64 encoded)
-
-
-ws://localhost:8080/brill_ws
-{"event": "subscribe", "topic": "/app.json"}
-{"event": "subscribe", "topic": "/app.jsonc"}
-{"event": "subscribe", "topic": "/app.jsonc", "filter": {"base64": true}}
-{"event": "subscribe", "topic": "/database/employee/readPage.sql", "filter": {"sortCol": "first_name", "sortDirection": "asc", "offset": 0, "row_count": 5}}
-
-{"event": "publish", "topic": "/app.json", "content": {"base64": "ewogICAgImFwcERlc2NyaXAiOiAiQnJpbGwgQ01TIiwKICAgICJsb2dpblBhZ2UiOiAiL2xvZ2luIiwKICAgICJob21lUGFnZSI6ICIvaG9tZSIsCiAgICAibm90Rm91bmRQYWdlIjogIi9lcnJvcllZWSIKICB9Cg=="}}
+See the LICENSE file in the root directory and the [Brill Software Website](https://www.brill.software "Brill Software") for more details.

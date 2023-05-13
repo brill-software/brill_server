@@ -1,6 +1,53 @@
+Introduction
+============
 MIT License
+-----------
 
-Copyright (c) 2021 Brill Software Limited - Brill Framework
+The Brill Framework (Client, Middleware and Server) is distributed under the MIT License, a copy of which 
+is below. All source code modules covered by the MIT license contain the following first line:
+
+// © 2023 Brill Software Limited - Brill Framework, distributed under the MIT license.
+
+The MIT license is a permissive license, meaning it carries very few restrictions 
+and basically allows you to do whatever you want with the code.
+
+Your modifications
+------------------
+
+You can make modification to the Brill Framework modules and mark the changes with your own choice
+of license. For example:
+
+// Original: © 2023 Brill Software Limited - Brill Framework, distributed under the MIT license.
+// Modifications: // © 2023 Traders Inc. - Trading App, distributed under the Traders Inc. license.
+
+You don't need to identify the exact lines of code that were changed, as these can be found using Git.
+
+It would be appreciated if you were able to make any generally applicable changes and fixes under the MIT 
+license, so that they could be included into future releases of the Brill Framework.
+
+Your Applications and Components
+--------------------------------
+
+Any applications developed by you using the Brill Framework are by default 
+your copyright with "all rights reserved". To change this, place a copyright
+notice on the first line of each module and specify the license. For example:
+
+// © 2023 Traders Inc. - Trading App, distributed under the Traders Inc. License.
+
+You can sell any applications and components you develop, using your choice of license. 
+Make sure to read and follow the license terms of any third party components you use.
+
+Brill Software Apps License
+---------------------------
+
+Applications developed by Brill Software are covered by the Brill Software Apps license, 
+a copy of which is below. Modules covered by the Brill Software Apps license contain the 
+following first line copyright notice or similar depending on the App:
+
+// © 2023 Brill Software Limited - Brill CMS, distributed under the Brill Software Apps License.
+
+MIT License
+===========
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +66,96 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Brill Software Apps License
+===========================
+
+Version 1.0 25th April 2022.
+Copyright (c) Brill Software (https://www.brill.software)
+Contact: Chris Bulcock (chris.bulcock@brill.software)
+
+Everyone is permitted to copy and distribute verbatim copies of this
+license document, but changing it is not allowed.
+
+TERMS AND CONDITIONS
+
+0. Definitions.
+
+"The License" refers to version 1.0 of the Brill Software Apps License.
+
+"App" refers to the pages, database scripts, resource files and React 
+components that comprise an application and are the copyrightable work licensed 
+under this License.
+
+"source code" refers to the Typescript component code and JavaScript code.
+
+"You" refers to the Licensee. The licensee could be a person or an orgransiation.
+
+"personal use" refers to usage by, only and only, the licensee, and not by any 
+other person or organisation related in any way to the licensee.
+
+1. Usage
+
+You are free to download, copy, compile, study and refer to the source code, pages, 
+database scripts and other resource files for an evaluation period of 30 days.
+
+After the 30 day evaluation period, if you wish to continue to use the App, you need
+to purchase a license. See the Brill Software Pricing page for more details.
+
+Usage by you of any work covered by this license should not, directly or indirectly, 
+enable its usage by any other individual or organisation.
+
+2. Modifications
+
+You are free to make any modifications to the source code, pages, database scripts 
+and other resource files covered by this license. You are also free to compile the 
+source after modifying it and using the complied product obtain thereafter in 
+compliance with this License. You may provide such modifications back to Brill 
+Software, as you see fit, but there is no obligation on the part of Brill Software 
+to include such modifications into future releases.
+
+3. Redistribution
+
+You may redistribute the Brill Framework, including your own applications, but not 
+with the Brill Software Apps included. The Brill Software Apps are to be deleted 
+by removing the app top level directory and its contents. You may also want to 
+delete the App specific components, but this is at your discretion.
+
+If you wish to redistribute any Brill Software Apps, please contact Brill Software 
+to obtain permission.
+
+4. Non-compliance
+
+You may not copy, modify, sublicense, or distribute the Brill Software Apps except 
+as expressly provided under this License. Any attempt otherwise to copy, modify,
+sublicense or distribute the Brill Software Apps is void, and will automatically
+terminate your rights under this License.
+
+5. Acceptance of License
+
+You are not required to accept this License, since you have not signed it. However, 
+nothing else grants you permission to modify or use the source. These actions are
+prohibited by law if you do not accept this License. Therefore, by modifying or 
+using the source ( or any work based on the source), you indicate your acceptance
+of this License to do so, and all its terms and conditions for copying, 
+redistributing or modifying the source or works based on it.
+
+6. Permissions
+
+If you intend to incorporate the source code, pages, database scripts and resource files in 
+part or whole, into any free or proprietary distribution, you need to explicitly write to the 
+Brill Software to ask for permission.
+
+7. No Warranty
+
+The source code licensed under this license is shared "as is". Since it is intended for 
+sharing as reference, there is no warranty, of either source code, or the app compiled
+from it. The entire risk of quality or performance of the app is with you.
+
+THE ORIGINAL AUTHOR OF THE APP IS NOT LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL
+, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE 
+THE APP ( INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE
+OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A FAILURE OF THE APP TO OPERATE WITH 
+ANY OTHER APPS OR PROGRAMS )
+
+END OF TERMS AND CONDITIONS
