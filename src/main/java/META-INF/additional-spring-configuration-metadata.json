@@ -67,5 +67,10 @@
     "name": "passwords.allowClearText",
     "type": "java.lang.Boolean",
     "description": "Set to true to allow clear text passwords to be set initially in the database. When the user changes their password, its always hashed. The default is false."
+  },
+  {
+    "name": "logging.level.brill",
+    "type": "java.lang.Boolean",
+    "description": "Set the log level to TRACE, DEBUG, INFO, WARN, ERROR or FATAL. Set to TRACE to see the JSON messages exchanged between the server and clients."
   }
 ]}

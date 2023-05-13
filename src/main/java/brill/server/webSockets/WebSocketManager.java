@@ -65,7 +65,7 @@ public class WebSocketManager extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage request) {
         String topic = "";
         try {
-            log.debug("IP: " + session.getRemoteAddress() + " Msg: " + truncate(request.getPayload()));
+            log.trace("IP: " + session.getRemoteAddress() + " Msg: " + truncate(request.getPayload()));
             int callCount = 0;
             JsonObject message = Json.createReader(new StringReader(request.getPayload())).readObject();
             String event = message.containsKey("event") ? message.getString("event") : "";
