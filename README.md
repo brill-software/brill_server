@@ -1,7 +1,7 @@
 # Brill Server
 
 The Brill Server is part of the Brill Framework. The Brill Server is a Spring Boot application
-written in Java, that runs on server machine. The Brill Server communications with Brill Clients
+written in Java, that runs on a server machine. The Brill Server communications with Brill Clients
 using the Brill Middleware.
 
 
@@ -35,13 +35,13 @@ The Spring Boot Profile can be one of:
 * `local` - Local workstation for development purposes
 * `prod` - Production
 
-Other Profiles can be defined. For example 'dev', 'test', 'integration'.
+Other Profiles can be defined. For example `dev`, `test`, `integration`.
 
 ### Application.yml file
 
-All configuration values are held in the */src/resources/application.yml* file
+All configuration values are held in the `/src/resources/application.yml` file
 
-This is an example of a section of the application.yml file to configure for the *local* Spring Boot profile.
+This is an example of a section of the **application.yml** file to configure for the **local** Spring Boot profile.
 
 ```
 ---
@@ -72,20 +72,12 @@ logging:
         brill: TRACE
 ```
 
-Note that sensitive values such as the database username and password are passed in as OS environment variables. These need to
-be configured in you shell or terminal configuration file.
+Note that sensitive values such as the database username and password are passed in as operating system environment variables. These need to
+be configured in the startup script, shell or terminal configuration file.
 
-#### Property brill.apps.repo.git
+Hover of each of the values in the **application.yml** file for a description of each values.
 
-This is the location of the Git Bucket repository that holds the apps pages and resource. Only SSH access is supported and this requires a public and private key to exist in the `~/.ssh` directory. HTTPS is not supported as this is less secure and would require configuration of a username and password.
-
-#### Property brill.apps.local.repo.dir
-
-This is the directory to store a local copy of the repository. On start up of the Brill Server for the first time, the repository is cloned from the remote repository. On subsequent startups a `git pull` is performed.
-
-#### Property brill.apps.skip.repo.pull
-
-The "git pull" on startup can be turned off by setting the `brill.apps.skip.repo.pull` property to `true`. It can be used to work offline when there's no internet connection for accessing the remote git repository.
+See the [Brill Software Developer Guide](https://www.brill.software/brill_software/developers_guide "Developers Guide") for more details..
 
 #### Running the spring boot process
 
@@ -106,9 +98,9 @@ bootRun {
 ### Production build
 
 Before building the Brill Server, the Brill Client must be built first. The Brill Client build process creates a
-build driectory and subdirectories that contain HTML pages, JavaScript files and other resrouces. The Brill Client
-build directory has to be copied over Brill Server static content directory. The Brill Server acts as a Web Server and
-also handles WebSocket connections on the same port number. This eliminates the need for a Reverse Proxy Server.
+build driectory and subdirectories that contain HTML pages, JavaScript and other resource files. The Brill Client
+build directory has to be copied over to Brill Server static content directory. The Brill Server acts as a Web Server 
+and also handles WebSocket connections on the same port number.
 
 #### Building the JAR
 
@@ -124,9 +116,9 @@ java -jar -Dspring.profiles.active=prod  build/libs/brill_server-0.0.1-SNAPSHOT.
 
 #### Generateing a Self Signed Certificate
 
-Normally the *local* profile is configured to use *HTTP* and the *prod* profile to use *HTTPS*. For *HTTPS*, a Digital Certificate is 
+Normally the **local** profile is configured to use *HTTP* and the **prod** profile to use *HTTPS*. For *HTTPS*, a Digital Certificate is 
 required that was signed by a Certification Authority. For initial setup and test purposes, a self signed certificate can be used. A
-self signed certificate can be created as follows:
+self signed certificate can be generated as follows:
 
 ```
 keytool -genkey -alias selfsigned_localhost_sslserver -keyalg RSA -keysize 2048 -validity 700 -keypass changeit -storepass changeit -keystore ssl-server.jks
@@ -137,7 +129,8 @@ keytool -genkey -alias selfsigned_localhost_sslserver -keyalg RSA -keysize 2048 
 To get a proper CA signed Digital Certificate you will need to contact your domain name provider or a Certification Authority. Follow their
 instructions. Typically they will require a CSR that is generated on the Server Machine. The following is an example of generating a CSR:
 
-brillserver@brill1 BrillServer % keytool -genkey -keysize 2048 -keyalg RSA -alias tomcat -keystore brill_keystore.jks
+```
+% keytool -genkey -keysize 2048 -keyalg RSA -alias tomcat -keystore brill_keystore.jks
 Enter keystore password:  
 Re-enter new password: 
 What is your first and last name?
@@ -157,16 +150,13 @@ Is CN=brill.software, OU=Support, O=Brill Software Limited, L=Dublin, ST=Ireland
 
 Generating 2,048 bit RSA key pair and self-signed certificate (SHA256withRSA) with a validity of 90 days
 	for: CN=brill.software, OU=Support, O=Brill Software Limited, L=Dublin, ST=Ireland, C=IE
-brillserver@brill1 BrillServer % 
 
+% keytool -certreq -alias tomcat -file wwwbrillsoftware.csr -keystore brill_keystore.jks
 ```
- keytool -certreq -alias tomcat -file wwwbrillsoftware.csr -keystore brill_keystore.jks
-```
-
 
 #### Running the Production JAR on MacOS
 
-Create a user called brillserver
+Create a user called **brillserver**. 
 
 ```
 su - brillserver
@@ -175,9 +165,7 @@ mkdir BrillServer
 
 Copy the Build Jar file to **BrillServer** directory.
 
-Create brill.server.plist in **/Library/LaunchDaemons**
-
-Put the git access public and private key into the **.ssh** directory
+Create a file called **brill.server.plist** in **/Library/LaunchDaemons**
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>
@@ -227,10 +215,11 @@ Put the git access public and private key into the **.ssh** directory
 </dict>
 </plist>
 ```
+Put the git access public and private key into the **.ssh** directory
 
-Re-boot the machine.
+Re-boot the machine. Check that the Brill Server starts. Access the system using a web browser and check the log file for errors.
 
-### Stoping and restarting the Server
+### Stoping and restarting the Brill Server
 
 ```
 sudo launchctl unload /Library/LaunchDaemons/brill.server.plist
@@ -238,12 +227,6 @@ sudo launchctl unload /Library/LaunchDaemons/brill.server.plist
 sudo launchctl load /Library/LaunchDaemons/brill.server.plist
 ```
 
-## Documentation
-
-[Brill Software Developer Guide](https://www.brill.software/brill_software/developers_guide "Developers Guide")
-
-[Brill Software Middleware](https://brill.software/brill_software/middleware "Brill Middleware")
-
 ## Licensing
 
-See the LICENSE file in the root directory and the [Brill Software Website](https://www.brill.software "Brill Software") for more details.
+See the LICENSE file in the root directory and the [Brill Software website](https://www.brill.software "Brill Software") for more details.
