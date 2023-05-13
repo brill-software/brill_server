@@ -45,3 +45,6 @@ out/
 /dist/
 /nbdist/
 /.nb-gradle/
+
+### Mac OS ###
+.DS_Store
