@@ -220,7 +220,7 @@ Put the git access public and private key into the **.ssh** directory
 
 Re-boot the machine. Check that the Brill Server starts. Access the system using a web browser and check the log file for errors.
 
-### Stoping and restarting the Brill Server
+### Stoping and Restarting the Brill Server
 
 ```
 sudo launchctl unload /Library/LaunchDaemons/brill.server.plist
