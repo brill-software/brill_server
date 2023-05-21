@@ -137,6 +137,10 @@ public class GitService {
         return gitRepo.getLog(workspace, branch, merge, rebase, pull);
     }
 
+    public String getTrackingBranch(String workspace) throws GitServiceException {
+        return gitRepo.getTrackingBranch(workspace);
+    }
+
     public void publishGitStatus(String workspace) throws GitServiceException {
         // Publish the change to everyone subscribed to git:status:/
         List<Subscriber> subscribers = wsService.getSubscribers("git:status:/");

@@ -30,6 +30,7 @@ import org.eclipse.jgit.transport.*;
 import org.eclipse.jgit.transport.sshd.SshdSessionFactory;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.lib.BranchConfig;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectReader;
@@ -170,7 +171,8 @@ public class GitRepository {
     }
 
    /**
-     * Performs a git rebase on a branch.
+     * Performs a git rebase on a branch. Assumes the rebase is from remotes/<remote>/develop.
+     * An enhancemnt would be to find the branches start point and rebase using that.
      * 
      * @param branch The branch to pull (either master or develop).
      * @return List of files pulled.
@@ -184,8 +186,12 @@ public class GitRepository {
             Path repoPath = Paths.get(format("%s/%s", localRepoDir, workspace));
             Repository repo = new FileRepositoryBuilder().setGitDir(repoPath.resolve(".git").toFile()).build();
             git = new Git(repo);
-            RebaseCommand rebase = git.rebase().setUpstream(repo.resolve("remotes/origin/develop"));
-                
+
+            String remoteBranch = this.getTrackingBranch(workspace);
+            int lastSlash = remoteBranch.lastIndexOf("/");
+            String remoteRebaseBranch = remoteBranch.substring(0, lastSlash) + "/develop";
+            RebaseCommand rebase = git.rebase().setUpstream(repo.resolve(remoteRebaseBranch));
+            
             rebaseResult = rebase.call();
             
             return getRebaseFileList(repo, branch, rebaseResult);
@@ -193,7 +199,7 @@ public class GitRepository {
         } catch (IOException ioe) {
             throw new GitServiceException(format("IOException when attempting a git pull from %s", localRepoDir), ioe);
         } catch (GitAPIException gae) {
-            log.error(format("GitAPI Exception when attempting a git pull from %s", localRepoDir), gae);    
+            log.error(format("GitAPI Exception when attempting a git rebease from %s", localRepoDir), gae);    
             log.warn("The network connection to the git respository might be down. Continuing with a respository that could be out of date.");
             throw new GitServiceException(format("Exception when attempting a git pull from %s", localRepoDir), gae);
         } finally {
@@ -202,9 +208,6 @@ public class GitRepository {
             }
         }
     }
-
-
-
 
     /**
      * Finds all the files that were pulled.
@@ -1043,6 +1046,9 @@ public class GitRepository {
 
             git.fetch().call();
 
+            String remoteTrackingBranch = new BranchConfig(repo.getConfig(), repo.getBranch()).getTrackingBranch();
+            String remote = remoteTrackingBranch.substring(5, remoteTrackingBranch.lastIndexOf("/") + 1); // e.g. remotes/origin/
+
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm");
             
             JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
@@ -1064,12 +1070,12 @@ public class GitRepository {
             }
 
             if (rebase && !branch.equals("master") && !branch.equals("develop")) {
-                Iterable<RevCommit> rebaseLog = git.log().add(repo.resolve("remotes/origin/" + compareBranch)).not(repo.resolve(branch)).call();
+                Iterable<RevCommit> rebaseLog = git.log().add(repo.resolve(remote + compareBranch)).not(repo.resolve(branch)).call();
                 for (RevCommit commit : rebaseLog) {
                         JsonObjectBuilder objBuilder = Json.createObjectBuilder();
                         objBuilder.add("commit", commit.getName().substring(0,7));
                         objBuilder.add("awaiting", "Rebase from " + compareBranch + " onto " + branch);
-                        objBuilder.add("branch", "remotes/origin/" + compareBranch);
+                        objBuilder.add("branch", remote + compareBranch);
                         objBuilder.add("message", commit.getFullMessage());
                         objBuilder.add("author", commit.getAuthorIdent().getName());
                         objBuilder.add("date", dateFormat.format(commit.getAuthorIdent().getWhen()));
@@ -1079,17 +1085,20 @@ public class GitRepository {
             }
             
             if (pull) {
-                Iterable<RevCommit> pullLog = git.log().add(repo.resolve("remotes/origin/" + branch)).not(repo.resolve(branch)).call();
+                // Fix - handle case where the remote is something other than 'origin'
+                ObjectId remoteObjId = repo.resolve(remoteTrackingBranch);
+                Iterable<RevCommit> pullLog = git.log().add(remoteObjId).not(repo.resolve(branch)).call();
+                String remoteBranch = remoteTrackingBranch.replace("refs/", "");
                 for (RevCommit commit : pullLog) {
-                        JsonObjectBuilder objBuilder = Json.createObjectBuilder();
-                        objBuilder.add("commit", commit.getName().substring(0,7));
-                        objBuilder.add("awaiting", "Pull from " + branch);
-                        objBuilder.add("branch", "remotes/origin/" + branch);
-                        objBuilder.add("message", commit.getFullMessage());
-                        objBuilder.add("author", commit.getAuthorIdent().getName());
-                        objBuilder.add("date", dateFormat.format(commit.getAuthorIdent().getWhen()));
-                        arrayBuilder.add(objBuilder.build());
-                        rowCount++;
+                    JsonObjectBuilder objBuilder = Json.createObjectBuilder();
+                    objBuilder.add("commit", commit.getName().substring(0,7));
+                    objBuilder.add("awaiting", "Pull from " + branch);
+                            objBuilder.add("branch", remoteBranch);
+                            objBuilder.add("message", commit.getFullMessage());
+                            objBuilder.add("author", commit.getAuthorIdent().getName());
+                            objBuilder.add("date", dateFormat.format(commit.getAuthorIdent().getWhen()));
+                            arrayBuilder.add(objBuilder.build());
+                            rowCount++;
                 }
             }
            
@@ -1099,6 +1108,7 @@ public class GitRepository {
                                                             .add("title", branch).build();
             return result;
         } catch (IOException | GitAPIException e) {
+            log.debug("Exception while getting the log: " + e.getMessage());
             throw new GitServiceException("Unable to get commits for branch: " + e.getMessage());
         }
         finally {
@@ -1106,6 +1116,31 @@ public class GitRepository {
                 git.close();
             }
         }      
+    }
+
+    /**
+     * Gets the remote tracking branch for the current local branch.
+     * 
+     * @param workspace
+     * @return Remote bracnh e.g. remotes/origin/develop
+     */
+    public String getTrackingBranch(String workspace) throws GitServiceException {
+        Git git = null;
+        try {
+            Path repoPath = Paths.get(format("%s/%s", localRepoDir, workspace));
+            Repository repo = new FileRepositoryBuilder().setGitDir(repoPath.resolve(".git").toFile()).build();
+            String remoteBranch = new BranchConfig(repo.getConfig(), repo.getBranch()).getTrackingBranch();
+            return remoteBranch.replace("refs/", "");
+        } catch (IOException e) {
+            log.debug("Exception while getting remote tracking: " + e.getMessage());
+            throw new GitServiceException("Unable to get remote tracking: " + e.getMessage());
+        }
+        finally {
+            if (git != null) {
+                git.close();
+            }
+        }      
+
     }
 
     private JsonObject convertStatusToJson(Status status, Collection<RevCommit> stashedRefs) {
