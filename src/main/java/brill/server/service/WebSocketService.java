@@ -58,7 +58,7 @@ public class WebSocketService {
 
     private static String DEFAULT_WORKSPACE = "production";
 
-    @Value("${server.sessionsDirectory:abc}")
+    @Value("${server.sessionsDirectory:sessions}")
     private String sessionsDir;
 
     private WebSocketSessionManager sessionManager;
@@ -125,6 +125,7 @@ public class WebSocketService {
                 throw new WebSocketException(format("Maximum WebSocket message length of %s exceeded. Length = %s", 
                     WebSocketConfig.WEB_SOCKET_MAX_MESSAGE_SIZE, response.length()));
             }
+            log.trace(responseObj.toString());
             session.sendMessage(new TextMessage(responseObj.toString()));
         } catch (IOException ioe) {
             log.warn(format("WebSocket sendMessageToClient exception: %s",ioe.getMessage()));
