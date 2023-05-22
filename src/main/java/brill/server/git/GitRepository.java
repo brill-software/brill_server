@@ -219,7 +219,14 @@ public class GitRepository {
      */
     private ArrayList<String> getPulledFileList(Repository repo, String branch, PullResult pullResult) {
         ArrayList<String> fileList = new ArrayList<String>();
-        try {  
+        try {
+            /**
+             * TODO - need to detect pull has failed earlier and give user an error message
+             * saying why the pull failed (normally because uncommited changes would be overridden).
+             */
+            if (pullResult == null) {
+                return fileList;
+            }
             FetchResult fetchResult = pullResult.getFetchResult();
             if (fetchResult == null) {
                 return fileList;
