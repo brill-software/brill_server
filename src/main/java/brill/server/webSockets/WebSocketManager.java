@@ -17,6 +17,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import brill.server.exception.SecurityServiceException;
 import brill.server.service.SecurityService;
 import brill.server.service.WebSocketService;
+import brill.server.utils.LogUtils;
 import brill.server.webSockets.annotations.*;
 import static java.lang.String.format;
 
@@ -27,8 +28,6 @@ import static java.lang.String.format;
 @Component
 public class WebSocketManager extends TextWebSocketHandler {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WebSocketManager.class);
-
-    private static int MAX_LOG_ENTRY_LEN = 1000;
 
     @Autowired
     private WebSocketSessionManager webSocketSessionManager;
@@ -65,7 +64,7 @@ public class WebSocketManager extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage request) {
         String topic = "";
         try {
-            log.trace("IP: " + session.getRemoteAddress() + " Msg: " + truncate(request.getPayload()));
+            log.trace("IP: " + session.getRemoteAddress() + " Msg: " + LogUtils.truncate(request.getPayload()));
             int callCount = 0;
             JsonObject message = Json.createReader(new StringReader(request.getPayload())).readObject();
             String event = message.containsKey("event") ? message.getString("event") : "";
@@ -150,12 +149,5 @@ public class WebSocketManager extends TextWebSocketHandler {
             paramNum++;
         }
         return params.toArray();
-    }
-
-    private String truncate(String msg) {
-        if (msg.length() < MAX_LOG_ENTRY_LEN) {
-            return msg;
-        }
-        return msg.substring(0, MAX_LOG_ENTRY_LEN) + "...";
     }
 }
