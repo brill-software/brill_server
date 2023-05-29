@@ -26,6 +26,7 @@ brill.apps:
       skip.pull: false
 passwords.pepper: ${BRILL_LOCAL_PWDS_PEPPER}
 passwords.allowClearText: true
+log.sessions.to.db: false
 logging:
     level:
         web: INFO
@@ -60,3 +61,8 @@ brill.apps:
     local.repo.dir: BrillAppsRepo  
 passwords.pepper: ${BRILL_PROD_PWDS_PEPPER}
 passwords.allowClearText: true
+log.sessions.to.db: true
+logging:
+    level:
+        web: INFO
+        brill: TRACE
