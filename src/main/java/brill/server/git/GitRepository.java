@@ -152,6 +152,8 @@ public class GitRepository {
                 if (e.getMessage().contains("Cannot check out from unborn branch")) {
                     git.rebase().setOperation(Operation.SKIP).call();
                     pullResult = pull.call();
+                } else {
+                    throw new GitServiceException(format("Unable to perform Pull: %s", e.getMessage()));
                 }
             }
             
@@ -186,14 +188,11 @@ public class GitRepository {
             Path repoPath = Paths.get(format("%s/%s", localRepoDir, workspace));
             Repository repo = new FileRepositoryBuilder().setGitDir(repoPath.resolve(".git").toFile()).build();
             git = new Git(repo);
-
             String remoteBranch = this.getTrackingBranch(workspace);
             int lastSlash = remoteBranch.lastIndexOf("/");
             String remoteRebaseBranch = remoteBranch.substring(0, lastSlash) + "/develop";
-            RebaseCommand rebase = git.rebase().setUpstream(repo.resolve(remoteRebaseBranch));
-            
+            RebaseCommand rebase = git.rebase().setUpstream(repo.resolve(remoteRebaseBranch));         
             rebaseResult = rebase.call();
-            
             return getRebaseFileList(repo, branch, rebaseResult);
 
         } catch (IOException ioe) {
@@ -210,6 +209,20 @@ public class GitRepository {
     }
 
     /**
+     * Finds all the files that were rebased.
+     * 
+     * @param repo
+     * @param branch
+     * @param pullResult List of file paths for the files pulled.
+     * @return
+     */
+    private ArrayList<String> getRebaseFileList(Repository repo, String branch, RebaseResult rebaseResult) {
+        ArrayList<String> fileList = new ArrayList<String>();
+        // Find rebased files.
+        return fileList;
+    }
+
+    /**
      * Finds all the files that were pulled.
      * 
      * @param repo
@@ -220,13 +233,6 @@ public class GitRepository {
     private ArrayList<String> getPulledFileList(Repository repo, String branch, PullResult pullResult) {
         ArrayList<String> fileList = new ArrayList<String>();
         try {
-            /**
-             * TODO - need to detect pull has failed earlier and give user an error message
-             * saying why the pull failed (normally because uncommited changes would be overridden).
-             */
-            if (pullResult == null) {
-                return fileList;
-            }
             FetchResult fetchResult = pullResult.getFetchResult();
             if (fetchResult == null) {
                 return fileList;
@@ -261,53 +267,6 @@ public class GitRepository {
         }
         return fileList;
     }
-
-    /**
-     * Finds all the files that were rebased.
-     * 
-     * @param repo
-     * @param branch
-     * @param pullResult List of file paths for the files pulled.
-     * @return
-     */
-    private ArrayList<String> getRebaseFileList(Repository repo, String branch, RebaseResult rebaseResult) {
-        ArrayList<String> fileList = new ArrayList<String>();
-        //    Still to DO
-        //    try {  
-        //     FetchResult fetchResult = rebaseResult.g            if (fetchResult == null) {
-        //         return fileList;
-        //     }
-        //     Collection<TrackingRefUpdate> updates = fetchResult.getTrackingRefUpdates();
-        //     for (TrackingRefUpdate update : updates) {
-        //         if (!update.getLocalName().endsWith(branch)) {
-        //             continue;
-        //         }
-        //         RevWalk walk = new RevWalk(repo);
-        //         RevCommit newObjTree = walk.parseCommit(update.getNewObjectId());
-        //         RevCommit oldObjTree = walk.parseCommit(update.getOldObjectId());
-        //         ObjectId newTree = newObjTree.getTree();
-        //         ObjectId oldTree = oldObjTree.getTree();
-        //         TreeWalk tw = new TreeWalk(repo);
-        //         tw.setRecursive(true);
-        //         tw.addTree(oldTree);
-        //         tw.addTree(newTree);
-        //         List<DiffEntry> diffs = DiffEntry.scan(tw);
-        //         DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
-        //         diffFormatter.setRepository(repo);
-        //         diffFormatter.setContext(0);
-        //         for (DiffEntry entry : diffs) {
-        //             FileHeader header = diffFormatter.toFileHeader(entry);
-        //             fileList.add(header.getNewPath());
-        //         }
-        //         diffFormatter.close();
-        //         walk.close();
-        //     } 
-        // } catch (IOException e) {
-        //         log.error("IOExpetion when performing git pull",e);
-        // }
-        return fileList;
-    }
-
 
 
     public void cloneOrPull(String workspace, String branch) throws GitServiceException {

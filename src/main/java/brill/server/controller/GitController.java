@@ -629,8 +629,8 @@ public class GitController {
             gitService.pull(workspace, branch);
             wsService.sendMessageToClient(session, "response", topic, "{}");
         } catch (Exception e) {
-            wsService.sendErrorToClient(session, topic, format("Git pull %s error:", branch), e.getMessage() );
-            log.error(format("Git pull %s exception: ", branch), e);
+            wsService.sendErrorToClient(session, topic, format("Pull Failed", branch), e.getMessage() );
+            log.error(format("Git pull %s exception: %s", branch, e.getMessage()));
         }
     }
 

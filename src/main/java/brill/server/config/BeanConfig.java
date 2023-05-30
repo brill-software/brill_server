@@ -2,6 +2,7 @@
 package brill.server.config;
 
 import brill.server.database.Database;
+import brill.server.exception.GitServiceException;
 import brill.server.git.GitRepository;
 import org.apache.catalina.connector.Connector;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +80,12 @@ public class BeanConfig {
 
             if (repo.localRepoExits(PRODUCTION_WORKSPACE)) {
                 if (!skipRepoPull) {
-                    repo.pull(PRODUCTION_WORKSPACE, MASTER);
+                    try {
+                        repo.pull(PRODUCTION_WORKSPACE, MASTER);
+                    } catch (GitServiceException e) {
+                        log.error(format("##### Unable to Pull master branch to Production Workspace: %s", e.getMessage()));
+                        // Continue with startup.
+                    }       
                 }
             } else {
                 repo.deleteLocalRepo(PRODUCTION_WORKSPACE);
@@ -88,7 +94,12 @@ public class BeanConfig {
 
             if (repo.localRepoExits(DEVELOPMENT_WORKSPACE)) {
                 if (!skipRepoPull) {
-                    repo.pull(DEVELOPMENT_WORKSPACE, DEVELOP);
+                    try {
+                        repo.pull(DEVELOPMENT_WORKSPACE, DEVELOP);
+                    } catch (GitServiceException e) {
+                        log.error(format("##### Unable to Pull develop branch to Development Workspace: %s", e.getMessage()));
+                        // Continue with startup.
+                    }  
                 }
             } else {
                 repo.deleteLocalRepo(DEVELOPMENT_WORKSPACE);
