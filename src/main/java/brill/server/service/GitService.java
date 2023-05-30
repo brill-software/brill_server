@@ -118,7 +118,7 @@ public class GitService {
     }
 
     public void mergeBranch(String workspace, String branch) throws GitServiceException {
-        gitRepo.mergeBranch(workspace, branch);   
+        gitRepo.mergeBranch(workspace, branch);
     }
 
     public void deleteBranch(String workspace, String branch, boolean deleteFromRepo, boolean forceDelete) throws GitServiceException {
@@ -139,6 +139,10 @@ public class GitService {
 
     public String getTrackingBranch(String workspace) throws GitServiceException {
         return gitRepo.getTrackingBranch(workspace);
+    }
+
+    public String getRemoteRepo(String workspace) throws GitServiceException {
+        return gitRepo.getRemoteRepo(workspace);
     }
 
     public void publishGitStatus(String workspace) throws GitServiceException {

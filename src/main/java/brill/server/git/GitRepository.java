@@ -1139,15 +1139,47 @@ public class GitRepository {
             String remoteBranch = new BranchConfig(repo.getConfig(), repo.getBranch()).getTrackingBranch();
             return remoteBranch.replace("refs/", "");
         } catch (IOException e) {
-            log.debug("Exception while getting remote tracking: " + e.getMessage());
-            throw new GitServiceException("Unable to get remote tracking: " + e.getMessage());
+            log.debug("Exception while getting remote tracking branch: " + e.getMessage());
+            throw new GitServiceException("Unable to get remote tracking branch: " + e.getMessage());
         }
         finally {
             if (git != null) {
                 git.close();
             }
         }      
+    }
 
+    /**
+     * Gets the remote repository URI for the current local branch.
+     * 
+     * @param workspace
+     * @return Remote bracnh e.g. git:/
+     */
+    public String getRemoteRepo(String workspace) throws GitServiceException {
+        Git git = null;
+        try {
+            Path repoPath = Paths.get(format("%s/%s", localRepoDir, workspace));
+            Repository repo = new FileRepositoryBuilder().setGitDir(repoPath.resolve(".git").toFile()).build();
+            git = new Git(repo);
+            String remoteBranch = new BranchConfig(repo.getConfig(), repo.getBranch()).getRemote();
+            List<RemoteConfig> remotesList = git.remoteList().call();
+            for (RemoteConfig remote: remotesList) {
+                for(URIish uri : remote.getURIs()){
+                    if (remote.getName().equals(remoteBranch)) {
+                        return uri.toString();
+                    }
+                }
+            }
+            return "unknown";
+        } catch (IOException | GitAPIException e) {
+            log.debug("Exception while getting remote repo URI: " + e.getMessage());
+            throw new GitServiceException("Unable to get remote repo URI: " + e.getMessage());
+        }
+        finally {
+            if (git != null) {
+                git.close();
+            }
+        }      
     }
 
     private JsonObject convertStatusToJson(Status status, Collection<RevCommit> stashedRefs) {
