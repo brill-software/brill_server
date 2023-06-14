@@ -69,6 +69,11 @@
     "description": "Set to true to allow clear text passwords to be set initially in the database. When the user changes their password, its always hashed. The default is false."
   },
   {
+    "name": "log.sessions.to.db",
+    "type": "java.lang.Boolean",
+    "description": "When set to true, session information and pages accesses are logged to the database tables session_log and session_page_log."
+  },
+  {
     "name": "logging.level.brill",
     "type": "java.lang.Boolean",
     "description": "Set the log level to TRACE, DEBUG, INFO, WARN, ERROR or FATAL. Set to TRACE to see the JSON messages exchanged between the server and clients."

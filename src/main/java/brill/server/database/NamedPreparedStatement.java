@@ -125,10 +125,10 @@ public class NamedPreparedStatement extends PreparedStatementImpl {
         NamedPreparedStatement stmt = new NamedPreparedStatement(conn.prepareStatement(parsedQuery.toString()), sql, orderedParameters, directInsertParameters);
         getParamsFromJsonObject(stmt, json);
         
-        // log.trace("Named Param SQL : " + sql);
-        // log.trace("Json values   : " + json.toString());
-        // log.trace("Prepared Stmt   : " + parsedQuery.toString());
-        // log.trace("Equivalent SQL  : " + stmt.equivalentSQL);
+        log.trace("Named Param SQL : " + sql);
+        log.trace("Json values   : " + json.toString());
+        log.trace("Prepared Stmt   : " + parsedQuery.toString());
+        log.trace("Equivalent SQL  : " + stmt.equivalentSQL);
 
         return stmt;
     }

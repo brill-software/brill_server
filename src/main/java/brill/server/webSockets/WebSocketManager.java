@@ -4,19 +4,24 @@ package brill.server.webSockets;
 import java.io.StringReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import javax.json.Json;
 import javax.json.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import brill.server.exception.SecurityServiceException;
+import brill.server.service.DatabaseService;
 import brill.server.service.SecurityService;
 import brill.server.service.WebSocketService;
+import brill.server.utils.LogUtils;
 import brill.server.webSockets.annotations.*;
 import static java.lang.String.format;
 
@@ -28,7 +33,8 @@ import static java.lang.String.format;
 public class WebSocketManager extends TextWebSocketHandler {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WebSocketManager.class);
 
-    private static int MAX_LOG_ENTRY_LEN = 1000;
+    @Value("${log.sessions.to.db:false}")
+    private Boolean logSessionsToDb;
 
     @Autowired
     private WebSocketSessionManager webSocketSessionManager;
@@ -38,6 +44,9 @@ public class WebSocketManager extends TextWebSocketHandler {
 
     @Autowired
     private SecurityService securityService;
+
+    @Autowired
+    private DatabaseService db;
 
     // Injects a list of classes that have the @WebSocketController annotation
     @Autowired
@@ -65,7 +74,7 @@ public class WebSocketManager extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage request) {
         String topic = "";
         try {
-            log.trace("IP: " + session.getRemoteAddress() + " Msg: " + truncate(request.getPayload()));
+            log.trace("IP: " + session.getRemoteAddress() + " Msg: " + LogUtils.truncate(request.getPayload()));
             int callCount = 0;
             JsonObject message = Json.createReader(new StringReader(request.getPayload())).readObject();
             String event = message.containsKey("event") ? message.getString("event") : "";
@@ -99,6 +108,9 @@ public class WebSocketManager extends TextWebSocketHandler {
             } else if (callCount > 1) {
                 log.error("More than one @Event method matches Topic " + topic);
                 wsService.sendErrorToClient(session, topic, "Server Error.", "More than one server event method for topic.");
+            }
+            if (logSessionsToDb && event.equals("subscribe") && topic.contains("/Pages/")) {
+                logPageAccessToDb(session, topic);
             }
         } catch (SecurityServiceException e) {
             wsService.sendErrorToClient(session, topic, "No Permission", e.getMessage());
@@ -152,10 +164,17 @@ public class WebSocketManager extends TextWebSocketHandler {
         return params.toArray();
     }
 
-    private String truncate(String msg) {
-        if (msg.length() < MAX_LOG_ENTRY_LEN) {
-            return msg;
+    private void logPageAccessToDb(WebSocketSession session, String topic) {
+        try {
+            String sql = "insert session_page_log (session_id, date_time, page) values ( :sessionId, :dateTime, :page)";
+            String currentTime = LocalDateTime.now().toString();
+            String page = topic.substring(topic.indexOf(":") + 1);
+            JsonObject jsonParams = Json.createObjectBuilder().add("sessionId", session.getId())
+                .add("dateTime", currentTime)
+                .add("page", page).build();
+            db.executeNamedParametersUpdate(sql, jsonParams);
+        } catch (SQLException e) { 
+            log.warn("Unble to log page access to DB table session_page_log: " + e.getMessage());
         }
-        return msg.substring(0, MAX_LOG_ENTRY_LEN) + "...";
     }
 }

@@ -304,6 +304,22 @@ public class GitController {
             String workspace = wsService.getWorkspace(session);
             String branch= gitService.getCurrentBranch(workspace);
 
+            String trackingBranch = gitService.getTrackingBranch(workspace);
+            if (!trackingBranch.startsWith("remotes/origin/")) {
+                if (trackingBranch.endsWith(branch)) {
+                    String remoteRepoURI = gitService.getRemoteRepo(workspace);
+                    wsService.sendErrorToClient(session, topic, "Remote Tracking Branch", 
+                    format("Please be aware that the remote tracking branch is <b>%s</b><br/>" + 
+                        "and the remote repository URI <b>%s</b>.", trackingBranch, remoteRepoURI), 
+                        WARNING_SEVERITY);
+                } else {
+                    wsService.sendErrorToClient(session, topic, "Local and Remote Branch names not the same", 
+                    format("The local branch is <b>%s</b>. The remote tracking branch is <b>%s</b>.<br/>" +
+                        "The Brill CMS requires that the local and remote branch names must be the same. Please fix.", branch, trackingBranch), 
+                        ERROR_SEVERITY);
+                }
+            }
+
             JsonObject list = gitService.getLog(workspace, branch, merge, rebase, pull);
 
             wsService.sendMessageToClient(session, "response", topic, list.toString());
@@ -613,8 +629,8 @@ public class GitController {
             gitService.pull(workspace, branch);
             wsService.sendMessageToClient(session, "response", topic, "{}");
         } catch (Exception e) {
-            wsService.sendErrorToClient(session, topic, format("Git pull %s error:", branch), e.getMessage() );
-            log.error(format("Git pull %s exception: ", branch), e);
+            wsService.sendErrorToClient(session, topic, format("Pull Failed", branch), e.getMessage() );
+            log.error(format("Git pull %s exception: %s", branch, e.getMessage()));
         }
     }
 

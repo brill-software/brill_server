@@ -31,6 +31,7 @@ import brill.server.exception.CryptoServiceException;
 import brill.server.exception.WebSocketException;
 import brill.server.utils.FileUtils;
 import brill.server.utils.JsonUtils;
+import brill.server.utils.LogUtils;
 import brill.server.webSockets.WebSocketSessionManager;
 import java.util.Base64;
 import static java.lang.String.format;
@@ -58,8 +59,11 @@ public class WebSocketService {
 
     private static String DEFAULT_WORKSPACE = "production";
 
-    @Value("${server.sessionsDirectory:abc}")
+    @Value("${server.sessionsDirectory:sessions}")
     private String sessionsDir;
+
+    @Value("${logging.level.brill:info}")
+    private String loggingLevel;
 
     private WebSocketSessionManager sessionManager;
     private CryptoService cryptoService;
@@ -126,6 +130,9 @@ public class WebSocketService {
                     WebSocketConfig.WEB_SOCKET_MAX_MESSAGE_SIZE, response.length()));
             }
             session.sendMessage(new TextMessage(responseObj.toString()));
+            if (loggingLevel.equals("TRACE")) {
+                log.trace(LogUtils.truncate(responseObj.toString()));
+            }
         } catch (IOException ioe) {
             log.warn(format("WebSocket sendMessageToClient exception: %s",ioe.getMessage()));
         }

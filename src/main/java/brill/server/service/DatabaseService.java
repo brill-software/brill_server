@@ -61,6 +61,32 @@ public class DatabaseService {
         }
     }
 
+    public int executeUpdate(String query, String jsonParams) throws SQLException {
+        CachedConnection conn = null;
+        try {
+            conn = database.getConnection();
+            int rowsUpdated  = conn.executeUpdate(query, jsonParams);
+            return rowsUpdated;
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
+        }
+    } 
+
+    public int executeNamedParametersUpdate(String sql, JsonObject jsonParams) throws SQLException {
+        CachedConnection conn = null;
+        try {
+            conn = database.getConnection();
+            int rowsUpdated = conn.executeNamedParametersUpdate(sql, jsonParams);
+            return rowsUpdated;
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
+        }
+    }
+
     public JsonObject getUserDetails(String user) throws SQLException {
         CachedConnection conn = null;
         try {

@@ -2,7 +2,6 @@
 #
 # Passwords should be supplied using system environemnt variables rather than entered directly. The system
 # environment variables need to be setup in the OS runtime environment, otherwise the server won't start. 
-# Avoid checking sensitive configuration values into git, as it can be tricky to remove them from the history.
 #
 ---
 spring:
@@ -27,6 +26,7 @@ brill.apps:
       skip.pull: false
 passwords.pepper: ${BRILL_LOCAL_PWDS_PEPPER}
 passwords.allowClearText: true
+log.sessions.to.db: false
 logging:
     level:
         web: INFO
@@ -61,3 +61,8 @@ brill.apps:
     local.repo.dir: BrillAppsRepo  
 passwords.pepper: ${BRILL_PROD_PWDS_PEPPER}
 passwords.allowClearText: true
+log.sessions.to.db: true
+logging:
+    level:
+        web: INFO
+        brill: TRACE

@@ -73,6 +73,42 @@ INSERT INTO `brill_cms_user` VALUES (1,'admin','CMS Admin User','noreply@none.co
 UNLOCK TABLES;
 
 --
+-- Table structure for table `session_log`
+--
+
+DROP TABLE IF EXISTS `session_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `session_log` (
+  `session_log_id` int NOT NULL AUTO_INCREMENT,
+  `session_id` varchar(45) NOT NULL,
+  `start_date_time` datetime DEFAULT NULL,
+  `end_date_time` datetime DEFAULT NULL,
+  `user_agent` varchar(512) DEFAULT NULL,
+  `referrer` varchar(1024) DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `notes` varchar(1024) DEFAULT NULL,
+  PRIMARY KEY (`session_log_id`,`session_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `session_page_log`
+--
+
+DROP TABLE IF EXISTS `session_page_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `session_page_log` (
+  `session_page_log_id` int NOT NULL AUTO_INCREMENT,
+  `session_id` varchar(45) NOT NULL,
+  `date_time` datetime DEFAULT NULL,
+  `page` varchar(512) NOT NULL,
+  PRIMARY KEY (`session_page_log_id`,`session_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+--
 -- Table structure for table `employee`
 --
 
