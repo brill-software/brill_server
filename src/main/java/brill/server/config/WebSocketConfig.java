@@ -26,24 +26,13 @@ public class WebSocketConfig implements WebSocketConfigurer {
     private String allowedOrigins;
 
     /**
-     * Registers a SocksJS endpoint of /brill_socksjs. The SocksJS protocol has various fallback modes for
-     * if WebSockets are blocked. The fallback protocols include xhr-streaming and xhr-polling.
-     * 
-     * A seconnd endpoint of /brill_ws is registed mainly for debug purposes. This can be used with 
-     * the developer tools WebSocket King and Postman. The Brill Client can also be set to use the /brill_ws
-     * endpoint, in which case the messages can be viewed in the Chrome Developer Network WS tool.
+     * Registers the WebSocket endpoint of /brill_ws.
      * 
      */
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-
         String[] allowedOriginsArray = StringUtils.tokenizeToStringArray(allowedOrigins, ",");
-           
-        // Register SOCKS endpoint
-        registry.addHandler(wsHandler(), "/brill_socksjs").setAllowedOrigins(allowedOriginsArray).withSockJS()
-           .setWebSocketEnabled(true).setHeartbeatTime(25000).setDisconnectDelay(5000).setSessionCookieNeeded(false);
-
-        // Plain WebScoket endpoint
+        // WebScoket endpoint
         registry.addHandler(wsHandler(), "/brill_ws").setAllowedOrigins(allowedOriginsArray);
 
     }
