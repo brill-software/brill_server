@@ -29,7 +29,7 @@ public class SecurityService {
         if (!wsService.hasPermission(session, permission)) {
             log.warn(format("User %s requires permission %s to access topic %s", wsService.getUsername(session), permission, topic));
             // The message must contain the word "permission" for the client Router to re-direct users to the login page.
-            throw new SecurityServiceException(format("Sorry but you don't have the %s permission, which is required for this action.", permission));
+            throw new SecurityServiceException(format("Sorry but you don't have the <b>%s</b> permission, which is required for this action.", permission));
         }
     }
 
@@ -49,7 +49,7 @@ public class SecurityService {
                     if (username.length() == 0) {
                         throw new SecurityServiceException(format("Session expired or not logged in. Please login.", requiredPermission));
                     } else {
-                        throw new SecurityServiceException(format("Sorry but you don't have the %s permission.", requiredPermission));
+                        throw new SecurityServiceException(format("Sorry but you don't have the <b>%s</b> permission.", requiredPermission));
                     }  
                 }
             }
