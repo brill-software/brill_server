@@ -33,7 +33,7 @@ public class JsonUtils {
      * 
      * @param message
      * @param key
-     * @return
+     * @return The string or null.
      * @throws MissingValueException
      */
     public static String getString(JsonObject jsonObj, String key) throws MissingValueException {
@@ -41,6 +41,9 @@ public class JsonUtils {
             throw new MissingValueException(format("Message is missing a '%s' string.", key));
         }
         String jsonType = jsonObj.get(key).getValueType().name();
+        if (jsonType.equals("NULL")) {
+            return null;
+        }
         if (!jsonType.equals("STRING")) {
             throw new MissingValueException(format("The '%s' field contains a %s. It should contain a STRING.", key, jsonType));
         }
