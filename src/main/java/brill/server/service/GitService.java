@@ -32,7 +32,7 @@ public class GitService {
     private WebSocketService wsService;
 
     public boolean doesWorkspaceAlreadyExist(String workspace) {
-        return gitRepo.localRepoExits(workspace);
+        return gitRepo.doesWorkspaceAlreadyExist(workspace);
     }
 
     /**
@@ -101,8 +101,8 @@ public class GitService {
         return gitRepo.getBranchList(workspace, excludeCurrentBranch);
     }
 
-    public List<String> getRepoBranchList() throws GitServiceException {
-        return gitRepo.getRepoBranchList();
+    public List<String> getRepoBranchList(String workspace) throws GitServiceException {
+        return gitRepo.getRepoBranchList(workspace);
     }
 
     public String getCurrentBranch(String workspace) throws GitServiceException {
