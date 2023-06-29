@@ -9,6 +9,7 @@ import brill.server.service.*;
 import brill.server.webSockets.annotations.*;
 import java.util.Base64;
 import java.util.List;
+import static java.lang.String.format;
 
 /**
  * Publish Controller - publishes .json, .jsonc, .js, .sql and other topics.
@@ -67,8 +68,8 @@ public class PublishController {
             }
 
         } catch (Exception e) {
-            wsService.sendErrorToClient(session, topic, "Server publish error.", e.getMessage());
-            log.error("Publication exception.", e);
+            wsService.sendErrorToClient(session, topic, "Publish Failed", e.getMessage());
+            log.error(format("Publication exception: %s", e.getMessage()));
         }
     }
 
@@ -111,8 +112,8 @@ public class PublishController {
                     false, topic.endsWith(".jsonc"));
             }
         } catch (Exception e) {
-            wsService.sendErrorToClient(session, topic, "Server publish error.", e.getMessage());
-            log.error("Publication exception.", e);
+            wsService.sendErrorToClient(session, topic, "Publish Failed", e.getMessage());
+            log.error(format("Publication exception: %s", e.getMessage()));
         }
     }
 
@@ -137,7 +138,7 @@ public class PublishController {
             }
             String javaScript = new String(Base64.getDecoder().decode(message.getJsonObject("content").getString("base64")));
             gitService.saveFile(wsService.getWorkspace(session), topic, javaScript);
-            
+        
             // Publish to any sessions that have subscribed to the topic using "file:".
             List<Subscriber> subscribers = wsService.getSubscribers(topic);
             for (Subscriber subscriber : subscribers) {
@@ -148,12 +149,12 @@ public class PublishController {
             String javascriptTopic = topic.replace("file:", "javascript:");
             List<Subscriber> jsSubscribers = wsService.getSubscribers(javascriptTopic);
             for (Subscriber subscriber : jsSubscribers) {
-                String result = jsService.execute(javaScript, "", subscriber.getFilter(), wsService.getUsername(session));
+                String result = jsService.execute(javaScript, "", subscriber.getFilter(), wsService.getUsername(session), false);
                 wsService.sendMessageToClient(subscriber.getSession(), "publish", javascriptTopic, result);
             }
         } catch (Exception e) {
-            wsService.sendErrorToClient(session, topic, "Server publish error.", e.getMessage());
-            log.error("Publication exception.", e);
+            wsService.sendErrorToClient(session, topic, "Publish Failed", e.getMessage());
+            log.error(format("Publication exception: %s", e.getMessage()));
         }
     }
 
@@ -194,8 +195,8 @@ public class PublishController {
                 wsService.sendMessageToClient(subscriber.getSession(), "publish", queryTopic, result.toString());
             }
         } catch (Exception e) {
-            wsService.sendErrorToClient(session, topic, "Server publish error.", e.getMessage());
-            log.error("Publication exception.", e);
+            wsService.sendErrorToClient(session, topic, "Publish Failed", e.getMessage());
+            log.error(format("Publication exception: %s", e.getMessage()));
         }
     }
 
@@ -234,8 +235,8 @@ public class PublishController {
                 wsService.sendMessageToClient(subscriber.getSession(), "publish", topic, content.toString());
             }
         } catch (Exception e) {
-            wsService.sendErrorToClient(session, topic, "Server publish error.", e.getMessage());
-            log.error("Publication exception.", e);
+            wsService.sendErrorToClient(session, topic, "Publish Failed", e.getMessage());
+            log.error(format("Publication exception: %s", e.getMessage()));
         }
     }
 
