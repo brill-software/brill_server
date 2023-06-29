@@ -12,6 +12,7 @@ import brill.server.exception.WebSocketException;
 import brill.server.service.*;
 import brill.server.utils.JsonUtils;
 import brill.server.webSockets.annotations.*;
+import static brill.server.service.WebSocketService.*;   
 import static java.lang.String.format;
 
 /**
@@ -23,12 +24,14 @@ public class AuthenticationController {
     private WebSocketService wsService;
     private DatabaseService db;
     private PasswordService pwdService;
+     private GitService gitService; 
 
     // @Autowired
-    public AuthenticationController(WebSocketService wsService, DatabaseService db, PasswordService pwdService) {
+    public AuthenticationController(WebSocketService wsService, DatabaseService db, PasswordService pwdService, GitService gitService) {
         this.wsService = wsService;
         this.db = db;
         this.pwdService = pwdService;
+        this.gitService = gitService;
     }
 
 
@@ -114,6 +117,15 @@ public class AuthenticationController {
             wsService.setUsername(session, username);
             wsService.setName(session, response.getString("name"));
             wsService.setEmail(session, response.getString("email"));
+            String workspace = JsonUtils.getString(response, "workspace");
+            if (workspace != null && workspace.length() > 0) {
+                if (!gitService.doesWorkspaceAlreadyExist(workspace)) {
+                   // Create the workspace
+                   wsService.sendErrorToClient(session, topic, "Creating Workspace", "Please wait while the workspace is created.", INFO_SEVERITY);
+                   gitService.createNewWorkspace(workspace, "master");
+                }
+                wsService.setWorkspace(session, workspace);
+            }
             wsService.setPermissions(session, response.getString("permissions"));
             
             response = removePassword(response);
@@ -232,6 +244,13 @@ public class AuthenticationController {
 
             if (!newPassword.equals(confirmNewPassword)) {
                 wsService.sendErrorToClient(session, topic, "Password Mismatch", "Your new password and confirmation password don't match.");
+                return;
+            }
+
+            String changePwd = JsonUtils.getString(response, "changePassword");
+            if (changePwd.equals("X")) {
+                wsService.sendErrorToClient(session, topic, "Password Change Failed", 
+                    format("The password for user <b>%s</b> can't be changed.", username));
                 return;
             }
 
