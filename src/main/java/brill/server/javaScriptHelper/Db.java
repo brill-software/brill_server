@@ -21,17 +21,19 @@ import static java.lang.String.format;
 public class Db {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Db.class);
 
-    public static Database database = null;
+    public Database database = null;
+    private boolean dbWriteAllowed;
 
-    public static void initialise(Database database) {
-        Db.database = database;
+    public Db(Database database, boolean dbWriteAllowed) {
+        this.database = database;
+        this.dbWriteAllowed = dbWriteAllowed;
     }
 
-    public static String executeQuery(String query, String jsonParams) throws SQLException {
+    public String executeQuery(String query, String jsonParams) throws SQLException {
         CachedConnection conn = null;
         try {
             log.trace(format("Executing query: %s", query + " jsonParams = " + jsonParams));
-    
+
             conn = database.getConnection();
             JsonArray responseJson = conn.executeQuery(query, jsonParams);
             log.trace(format("Finished executing query. Result = %s", responseJson.toString()));
@@ -45,6 +47,7 @@ public class Db {
 
     public String executeNamedParamsQuery(String query, String jsonParams) throws SQLException {
         CachedConnection conn = null;
+
         try {
             conn = database.getConnection();
             JsonObject jsonObj = JsonUtils.jsonFromString(jsonParams);
@@ -59,6 +62,9 @@ public class Db {
 
     public int executeNamedParamsUpdate(String query, String jsonParams) throws SQLException {
         CachedConnection conn = null;
+        if (!dbWriteAllowed) {
+            throw new SQLException("You require the db_write permission to perform that operation.");
+        }
         try {
             conn = database.getConnection();
             JsonObject jsonObj = JsonUtils.jsonFromString(jsonParams);

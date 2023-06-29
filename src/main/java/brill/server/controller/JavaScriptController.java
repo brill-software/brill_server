@@ -61,9 +61,12 @@ public class JavaScriptController {
             topic = message.getString("topic");
             JsonObject content = JsonUtils.getJsonObject(message, "content");
             String javaScript = gitService.getFile(wsService.getWorkspace(session), topic);
-            
+
+            boolean dbWriteAllowed = wsService.hasPermission(session, "db_write");
+
             // Execute the JavaScript.
-            String result = jsService.execute(javaScript, content.toString(), "", wsService.getUsername(session));
+            String result = jsService.execute(javaScript, content.toString(), "", wsService.getUsername(session), 
+                dbWriteAllowed);
 
             JsonObject resultObj = JsonUtils.jsonFromString(result);
             if (resultObj.containsKey(ERROR_OBJECT)) {
@@ -84,7 +87,7 @@ public class JavaScriptController {
                 String js = gitService.getFile(wsService.getWorkspace(session), republishTopic);
                 List<Subscriber> jsSubscribers = wsService.getSubscribers(republishTopic);
                 for (Subscriber subscriber : jsSubscribers) {
-                    String res = jsService.execute(js, "", subscriber.getFilter(), wsService.getUsername(session));
+                    String res = jsService.execute(js, "", subscriber.getFilter(), wsService.getUsername(session), dbWriteAllowed);
                     wsService.sendMessageToClient(subscriber.getSession(), "publish", republishTopic, res);
                 }
             }
