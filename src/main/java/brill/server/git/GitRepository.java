@@ -4,6 +4,7 @@ package brill.server.git;
 import brill.server.exception.GitServiceException;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -278,7 +279,7 @@ public class GitRepository {
     }
 
     /**
-     * Returns true if the local repository already exists.
+     * Returns true if the local repository already exists and has the remote repository URL.
      * 
      * @return true if local repo exists.
      */
@@ -303,7 +304,24 @@ public class GitRepository {
             }
         } catch (IOException ex) {
         }
+
         return false;
+    }
+
+    public boolean doesWorkspaceAlreadyExist(String workspace) {
+        File localPath = new File(format("%s/%s", localRepoDir, workspace));
+        if (!localPath.exists() || !localPath.isDirectory()) {
+            return false;
+        }
+        File gitDir = new File(format("%s/%s/.git", localRepoDir, workspace));
+        if (!gitDir.exists() || !gitDir.isDirectory()) {
+            return false;
+        }
+        File gitConfig = new File(format("%s/%s/.git/config", localRepoDir, workspace));
+        if (!gitConfig.exists() || !gitConfig.isFile()) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -538,7 +556,10 @@ public class GitRepository {
                 file = new File(newFullPath);
             }
             Files.write(file.toPath(), newContent);
-        } catch (IOException e) {
+        } catch (AccessDeniedException e) {
+            throw new GitServiceException(format("File is write protected.<br />Sorry but you you are not allowed to modify %s", fullPath)); 
+        }
+        catch (IOException e) {
             throw new GitServiceException(format("Unable to create or update %s", fullPath), e); 
         }
     }
@@ -678,10 +699,10 @@ public class GitRepository {
      * @param branch
      * @throws GitServiceException
      */
-    public List<String> getRepoBranchList() throws GitServiceException {
+    public List<String> getRepoBranchList(String workspace) throws GitServiceException {
         Git git = null;
         try {
-            List<String> branchList = fetchGitBranches(remoteRepositoryUrl);
+            List<String> branchList = fetchGitBranches(getRemoteRepo(workspace));
 
             return branchList;
         } 
@@ -787,7 +808,7 @@ public class GitRepository {
             Repository repo = new FileRepositoryBuilder().setGitDir(repoPath.resolve(".git").toFile()).build();
             git = new Git(repo);
 
-            git.branchCreate().setUpstreamMode(SetupUpstreamMode.SET_UPSTREAM).setName(newBranch).setStartPoint("origin/" + existingBranch).call();
+            git.branchCreate().setUpstreamMode(SetupUpstreamMode.TRACK).setName(newBranch).setStartPoint("origin/" + existingBranch).call();
 
             git.push().setRemote("origin").setRefSpecs(new RefSpec(newBranch + ":" + newBranch)).call();
 
@@ -1096,6 +1117,9 @@ public class GitRepository {
             Path repoPath = Paths.get(format("%s/%s", localRepoDir, workspace));
             Repository repo = new FileRepositoryBuilder().setGitDir(repoPath.resolve(".git").toFile()).build();
             String remoteBranch = new BranchConfig(repo.getConfig(), repo.getBranch()).getTrackingBranch();
+            if (remoteBranch == null) {
+                throw new GitServiceException("The remote tracking branch is not set up. Use <code>git branch -u remote/remote_branch</code> to set the remote tracking branch.");
+            }
             return remoteBranch.replace("refs/", "");
         } catch (IOException e) {
             log.debug("Exception while getting remote tracking branch: " + e.getMessage());
