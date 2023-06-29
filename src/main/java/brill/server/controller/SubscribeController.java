@@ -129,8 +129,10 @@ public class SubscribeController {
             topic = message.getString("topic");
             JsonObject filterObj =  message.getJsonObject("filter");
             String javaScript = gitService.getFile(wsService.getWorkspace(session), topic);
+            boolean dbWriteAllowed = wsService.hasPermission(session, "db_write");
             // Execute the JavaScript and publish the results to the Client.
-            String results = jsService.execute(javaScript, "", filterObj.toString(), wsService.getUsername(session));
+            String results = jsService.execute(javaScript, "", filterObj.toString(), wsService.getUsername(session),
+                dbWriteAllowed);
             wsService.sendMessageToClient(session, "publish", topic, results);       
             wsService.addSubscription(session, topic, filterObj);
         } catch (Exception e) {
@@ -148,7 +150,7 @@ public class SubscribeController {
      * @param session Web Socket session.
      * @param message JSonObject containing the .sql Topic.
      */   
-    @Event(value = "subscribe", topicMatches = "query:/.*\\.sql", permission="execute_sql") // SQL
+    @Event(value = "subscribe", topicMatches = "query:/.*\\.sql") // SQL
     public void subscribeToSqlAndExecute(@Session WebSocketSession session, @Message JsonObject message) {
         String topic = "";
         try {
