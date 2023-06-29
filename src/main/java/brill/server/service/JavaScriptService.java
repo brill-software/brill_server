@@ -34,12 +34,12 @@ public class JavaScriptService {
      * @return A string containing Json.
      * @throws JavaScriptException
      */
-    public String execute(String javaScript, String contentJson, String filterJson, String username) throws JavaScriptException {
+    public String execute(String javaScript, String contentJson, String filterJson, String username, boolean dbWriteAllowed) throws JavaScriptException {
 
         Context cx = Context.enter();
         
         try {
-            // Fix to ensures strings returned by Java method calls are full JS strings.
+            // Ensure strings returned by Java method calls are full JS strings.
             cx.getWrapFactory().setJavaPrimitiveWrap(false);
 
             Scriptable scope = cx.initStandardObjects();
@@ -50,8 +50,7 @@ public class JavaScriptService {
             Object wrappedFilterJson = Context.javaToJS(filterJson, scope);  
             ScriptableObject.putProperty(scope, "filter", wrappedFilterJson);
 
-            Db.initialise(database); 
-            Object wrappedDb = Context.javaToJS(new Db(), scope);
+            Object wrappedDb = Context.javaToJS(new Db(database, dbWriteAllowed), scope);
             ScriptableObject.putProperty(scope, "db", wrappedDb);
 
             Object wrappedUsername = Context.javaToJS(username, scope);

@@ -24,7 +24,7 @@ public class JavaScriptServiceTest {
     @Test
     public void exectureHelloWorld() throws Exception {
         System.out.println("Running hello world script");
-        String result = service.execute("print('Hello there'); {result: 1};","", "{'test': 1}", "testuser");
+        String result = service.execute("print('Hello there'); {result: 1};","", "{'test': 1}", "testuser", false);
         assertTrue(result.contains("result"));
     }
 }
