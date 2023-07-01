@@ -354,25 +354,25 @@ public class GitRepository {
             if (topic.equals("/")) {
                 topic = "";
             }
-            return processTreeNode(format("%s/%s/%s", localRepoDir, branch, appName), topic, includeFileContent);
+            return processTreeNode(format("%s/%s/%s", localRepoDir, branch, appName), topic, includeFileContent, null);
         } catch (Exception ioe) {
             throw new GitServiceException(format("IOException when reading from %s", fullPath), ioe);
         }
     }
 
-    public JsonObject getFileTree(String branch, String path, boolean includeFileContent) throws GitServiceException {
+    public JsonObject getFileTree(String branch, String path, boolean includeFileContent, List<String> hiddenApps) throws GitServiceException {
         String fullPath = "";
         try {
             if (path.endsWith("/")) {
                 path = path.substring(0, path.length() - 1);
             }
-            return processTreeNode(format("%s/%s", localRepoDir, branch), path, includeFileContent);
+            return processTreeNode(format("%s/%s", localRepoDir, branch), path, includeFileContent, hiddenApps);
         } catch (Exception ioe) {
             throw new GitServiceException(format("IOException when reading from %s", fullPath), ioe);
         }
     }
 
-    private JsonObject processTreeNode(String root, String path, boolean includeFileContent) throws IOException {
+    private JsonObject processTreeNode(String root, String path, boolean includeFileContent, List<String> hiddenApps) throws IOException {
         JsonObjectBuilder objBuilder = Json.createObjectBuilder();
         File file = new File(root + path);
         if (file.isFile()) {
@@ -409,8 +409,9 @@ public class GitRepository {
         Arrays.sort(contents, new Sort());
         JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
         for (String child : contents) {
-            if (!child.equals(".DS_Store") && !child.equals(".git")) {
-                arrayBuilder.add(processTreeNode(root, path + "/" + child, includeFileContent));
+            if (!child.equals(".DS_Store") && !child.equals(".git") && 
+                (hiddenApps == null || !hiddenApps.contains(child))) {
+                arrayBuilder.add(processTreeNode(root, path + "/" + child, includeFileContent, hiddenApps));
             }   
         }
         objBuilder.add("children", arrayBuilder.build());

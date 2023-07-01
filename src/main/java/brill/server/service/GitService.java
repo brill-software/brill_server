@@ -5,9 +5,11 @@ import brill.server.domain.Subscriber;
 import brill.server.exception.GitServiceException;
 import brill.server.exception.WebSocketException;
 import brill.server.git.GitRepository;
+import brill.server.utils.JsonUtils;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import javax.json.JsonObject;
@@ -47,12 +49,24 @@ public class GitService {
         gitRepo.cloneRemoteRepository(newWorkspace, branch);
     }
 
-    public JsonObject getFileTree(String workspace, String topic, boolean includeFileContent) throws GitServiceException {
-        return gitRepo.getFileTree(workspace, getPath(topic), includeFileContent);
+    public JsonObject getFileTree(String workspace, String topic, JsonObject filter) throws GitServiceException {
+        boolean includeFileContent = false;
+        List<String> hiddenApps = new ArrayList<String>();
+        if (filter != null) {    
+            if (filter.containsKey("includeFileContent") &&
+                filter.get("includeFileContent").getValueType().name().equals("TRUE")) {
+                    includeFileContent = true;
+                }
+            if (filter.containsKey("hiddenApps")) {
+                hiddenApps =  Arrays.asList(filter.getString("hiddenApps").split(","));
+            }
+        }
+
+        return gitRepo.getFileTree(workspace, getPath(topic), includeFileContent, hiddenApps);
     }
 
     public JsonObject getFileTree(String workspace, String topic) throws GitServiceException {
-        return gitRepo.getFileTree(workspace, getPath(topic), false);
+        return gitRepo.getFileTree(workspace, getPath(topic), false, null);
     }
 
     /**
@@ -235,13 +249,17 @@ public class GitService {
 
     private void publishTopicTree(String workspace) throws GitServiceException{
         String topic = "file:/";
-        String content = getFileTree(workspace, topic).toString();
+        //String content = getFileTree(workspace, topic).toString();
         List<Subscriber> subscribers = wsService.getSubscribers(topic);
         for (Subscriber subscriber : subscribers) {
-            try {
-                wsService.sendMessageToClient(subscriber.getSession(), "publish", topic, content);
-            } catch (WebSocketException e) {
-                // Ignore
+            if (wsService.getWorkspace(subscriber.getSession()).equals(workspace)) {
+                try {
+                    JsonObject filter = JsonUtils.jsonFromString(subscriber.getFilter());
+                    String content = getFileTree(workspace, topic, filter).toString();
+                    wsService.sendMessageToClient(subscriber.getSession(), "publish", topic, content);
+                } catch (WebSocketException e) {
+                    // Ignore
+                }
             }
         }
     }
