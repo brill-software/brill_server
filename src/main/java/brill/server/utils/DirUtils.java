@@ -4,17 +4,17 @@ import java.io.File;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-public class FileUtils {
+public class DirUtils {
 
     private static long lastCleanUpTime = 0;
 
     public static void cleanUpOldFiles(String folderPath, int expirationPeriodHours) {
         // Only do a cleanup every hour.
         long currentTime = new Date().getTime();
-        if ( currentTime - FileUtils.lastCleanUpTime < TimeUnit.HOURS.toMillis(1)) {
+        if ( currentTime - DirUtils.lastCleanUpTime < TimeUnit.HOURS.toMillis(1)) {
             return;
         }
-        FileUtils.lastCleanUpTime = currentTime;
+        DirUtils.lastCleanUpTime = currentTime;
 
         File targetDir = new File(folderPath);
         if (!targetDir.exists()) {
@@ -34,5 +34,4 @@ public class FileUtils {
             }
         }
     }
-    
 }

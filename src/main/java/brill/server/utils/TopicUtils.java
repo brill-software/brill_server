@@ -10,5 +10,5 @@ public class TopicUtils {
             return "";
         }        
         return topic.substring(lastDotPos + 1);
-    }    
+    }
 }

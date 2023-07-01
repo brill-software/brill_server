@@ -29,7 +29,7 @@ import brill.server.config.WebSocketConfig;
 import brill.server.domain.Subscriber;
 import brill.server.exception.CryptoServiceException;
 import brill.server.exception.WebSocketException;
-import brill.server.utils.FileUtils;
+import brill.server.utils.DirUtils;
 import brill.server.utils.JsonUtils;
 import brill.server.utils.LogUtils;
 import brill.server.webSockets.WebSocketSessionManager;
@@ -334,8 +334,8 @@ public class WebSocketService {
     }
 
    /**
-     * A Elliptic Curve key pair is generated and used in conjunction with the Client Public Key
-     * to create a Shared Secret. The gernated Server Public Key is returned to the client, so
+     * An Elliptic Curve key pair is generated and used in conjunction with the Client Public Key
+     * to create a Shared Secret. The generated Server Public Key is returned to the client, so
      * that the client can generate the same Shared Secret.
      *  
      * 
@@ -380,7 +380,7 @@ public class WebSocketService {
     private void serializeSession(String sessionId, Map<String, Object> map) {
         try {
             checkSessionsDir();
-            FileUtils.cleanUpOldFiles(sessionsDir, 1);
+            DirUtils.cleanUpOldFiles(sessionsDir, 1);
             FileOutputStream fileOutputStream = new FileOutputStream(format("%s/%s.txt", sessionsDir, sessionId));
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
             objectOutputStream.writeObject(map);
