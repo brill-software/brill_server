@@ -382,7 +382,29 @@ public class GitController {
     }
 
     /**
-     * Subscribes to get the current branch for the workspace.
+     * Subscribes to the current workspace.
+     * 
+     * @param session
+     * @param message
+     * @throws WebSocketException
+     */
+    @Event(value = "subscribe", topicMatches = "git:current_ws:/", permission="git_read")
+    public void getCurrentWorkspace(@Session WebSocketSession session, @Message JsonObject message) throws WebSocketException {
+        String topic = "";
+        try {
+            topic = message.getString("topic");
+            String workspace = wsService.getWorkspace(session);
+            String result = "\"" + workspace + "\"";
+            wsService.sendMessageToClient(session, "response", topic, result);
+
+        } catch (Exception e) {
+            wsService.sendErrorToClient(session, topic, "Git get current ws error:", e.getMessage() );
+            log.error("Git get current workspace exception: ", e);
+        }
+    }
+
+    /**
+     * Subscribes to the current branch for the workspace.
      * 
      * @param session
      * @param message
