@@ -84,6 +84,7 @@ test {
 }
 
 task copyWebApp(type: Copy) {
+	logger.quiet('Copying the contents of web app build directory ../brill_client/build into src/main/resources/static')
 	dependsOn(clean)
 	from '../brill_client/build'
   	into 'src/main/resources/static/.'
