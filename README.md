@@ -239,6 +239,12 @@ Create an account for development use and using the Workbench run the script `da
 
 User details are held in the `brill_cms_user` table. You can create new users by copying existing users using the MySQL Workbench. Provided the Brill Server `application.yml` has `passwords.allowClearText`set to <strong>true</strong>, you can enter passwords as clear text. When the user first logs in, they will be forced to change their password and from then on the password will be held in the database as a hash.
 
+### List installed versions of Java
+
+```
+/usr/libexec/java_home -V
+```
+
 ## License
 
 See the LICENSE file in the root directory and the [Brill Software website](https://www.brill.software "Brill Software") for more details.
