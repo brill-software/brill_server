@@ -94,7 +94,7 @@ CREATE TABLE `brill_cms_user` (
 
 LOCK TABLES `brill_cms_user` WRITE;
 /*!40000 ALTER TABLE `brill_cms_user` DISABLE KEYS */;
-INSERT INTO `brill_cms_user` VALUES (1,'admin','Administrator','admin@brill.software',NULL,'6b08bd40cabceefca4a0fabb5c9aebf4.8285.aaf5605d6475d0f6c44f82a0d561f61c8b8ace98529ad2895ee4840f7bfce8fd406e95800784b16454f6245fa95d4a4b','file_read,file_write,git_read,git_write,cms_user,change_workspace,cms_admin,db_write',NULL,'N','N');
+INSERT INTO `brill_cms_user` VALUES (1,'admin','Administrator','admin@brill.software',NULL,'Development','file_read,file_write,git_read,git_write,cms_user,change_workspace,cms_admin,db_write',NULL,'N','N');
 /*!40000 ALTER TABLE `brill_cms_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
