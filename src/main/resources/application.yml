@@ -15,7 +15,7 @@ server:
    sessionsDirectory: sessions
 database:
    driver: com.mysql.cj.jdbc.Driver
-   url: jdbc:mysql://localhost:3306/user_db
+   url: jdbc:mysql://localhost:3306/brill_local_db
    username: ${BRILL_LOCAL_DATABASE_USERNAME}
    password: ${BRILL_LOCAL_DATABASE_PWD}
 brill.apps:
@@ -30,7 +30,7 @@ log.sessions.to.db: false
 logging:
     level:
         web: INFO
-        brill: TRACE
+        brill: DEBUG
 
 ---
 spring:
@@ -65,4 +65,4 @@ log.sessions.to.db: true
 logging:
     level:
         web: INFO
-        brill: TRACE
+        brill: INFO
