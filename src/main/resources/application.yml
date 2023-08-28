@@ -15,7 +15,7 @@ server:
    sessionsDirectory: sessions
 database:
    driver: com.mysql.cj.jdbc.Driver
-   url: jdbc:mysql://localhost:3306/brill_local_db
+   url: jdbc:mysql://localhost:3306/brill_local_db?serverTimezone=UTC
    username: ${BRILL_LOCAL_DATABASE_USERNAME}
    password: ${BRILL_LOCAL_DATABASE_PWD}
 brill.apps:
@@ -52,7 +52,7 @@ server:
       key-store-type: JKS
 database:
    driver: com.mysql.cj.jdbc.Driver
-   url: jdbc:mysql://localhost:3306/brill_prod_db
+   url: jdbc:mysql://localhost:3306/brill_prod_db?serverTimezone=UTC
    username: ${BRILL_PROD_DATABASE_USERNAME}
    password: ${BRILL_PROD_DATABASE_PWD}    
 brill.apps:
