@@ -1,4 +1,4 @@
-// © 2021 Brill Software Limited - Brill Framework, distributed under the MIT license.
+// © 2021 Brill Software Limited - Brill Framework, distributed under the Brill Software Proprietry License.
 package brill.server.service;
 
 import org.springframework.beans.factory.annotation.Autowired;

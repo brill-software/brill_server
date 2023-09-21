@@ -1,4 +1,4 @@
-// © 2021 Brill Software Limited - Brill Framework, distributed under the MIT license.
+// © 2021 Brill Software Limited - Git Package, distributed under the MIT License.
 package brill.server.git;
 
 import brill.server.exception.GitServiceException;

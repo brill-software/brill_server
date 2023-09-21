@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.brill.server'
-version = '1.0.0'
+version = '1.0.1'
 
 // The versions of Java currently supported are 11 to 17.
 // Note that the Gradle for Java VS Code plug-in is hardcoded to use 11.
@@ -85,7 +85,6 @@ test {
 
 task copyWebApp(type: Copy) {
 	logger.quiet('Copying the contents of web app build directory ../brill_client/build into src/main/resources/static')
-	dependsOn(clean)
 	from '../brill_client/build'
   	into 'src/main/resources/static/.'
 }

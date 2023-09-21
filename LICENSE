@@ -6,7 +6,7 @@ MIT License
 The Brill Framework (Client, Middleware and Server) is distributed under the MIT License, a copy of which 
 is below. All source code modules covered by the MIT license contain the following first line:
 
-// © 2023 Brill Software Limited - Brill Framework, distributed under the MIT license.
+// © 2023 Brill Software Limited - Brill Framework, distributed under the Brill Software Proprietry License.
 
 The MIT license is a permissive license, meaning it carries very few restrictions 
 and basically allows you to do whatever you want with the code.
@@ -17,7 +17,7 @@ Your modifications
 You can make modification to the Brill Framework modules and mark the changes with your own choice
 of license. For example:
 
-// Original: © 2023 Brill Software Limited - Brill Framework, distributed under the MIT license.
+// Original: © 2023 Brill Software Limited - Brill Framework, distributed under the Brill Software Proprietry License.
 // Modifications: // © 2023 Traders Inc. - Trading App, distributed under the Traders Inc. license.
 
 You don't need to identify the exact lines of code that were changed, as these can be found using Git.
