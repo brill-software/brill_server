@@ -61,7 +61,7 @@ CREATE TABLE `brill_cms_permission` (
 
 LOCK TABLES `brill_cms_permission` WRITE;
 /*!40000 ALTER TABLE `brill_cms_permission` DISABLE KEYS */;
-INSERT INTO `brill_cms_permission` VALUES (1,'file_read'),(2,'file_write'),(3,'git_read'),(4,'git_write'),(5,'cms_user'),(6,'change_workspace'),(7,'cms_admin'),(8,'db_write');
+INSERT INTO `brill_cms_permission` VALUES (1,'file_read'),(2,'file_write'),(3,'git_read'),(4,'git_write'),(5,'cms_user'),(6,'change_workspace'),(7,'cms_admin'),(8,'db_write'),(9,'chatbot');
 /*!40000 ALTER TABLE `brill_cms_permission` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -94,7 +94,7 @@ CREATE TABLE `brill_cms_user` (
 
 LOCK TABLES `brill_cms_user` WRITE;
 /*!40000 ALTER TABLE `brill_cms_user` DISABLE KEYS */;
-INSERT INTO `brill_cms_user` VALUES (1,'admin','Administrator','admin@brill.software',NULL,'Development','file_read,file_write,git_read,git_write,cms_user,change_workspace,cms_admin,db_write',NULL,'N','N');
+INSERT INTO `brill_cms_user` VALUES (1,'admin','Administrator','admin@brill.software',NULL,'Development','file_read,file_write,git_read,git_write,cms_user,change_workspace,cms_admin,db_write,chatbot',NULL,'N','N');
 /*!40000 ALTER TABLE `brill_cms_user` ENABLE KEYS */;
 UNLOCK TABLES;
 

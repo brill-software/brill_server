@@ -27,10 +27,15 @@ brill.apps:
 passwords.pepper: ${BRILL_LOCAL_PWDS_PEPPER}
 passwords.allowClearText: true
 log.sessions.to.db: false
+chatbot:
+   api.key: ${BRILL_LOCAL_CHATBOT_API_KEY}
+   api.url: https://api.openai.com/v1/chat/completions
+   model: gpt-3.5-turbo
+   timeout: 120
 logging:
     level:
         web: INFO
-        brill: DEBUG
+        brill: TRACE
 
 ---
 spring:
@@ -62,6 +67,11 @@ brill.apps:
 passwords.pepper: ${BRILL_PROD_PWDS_PEPPER}
 passwords.allowClearText: true
 log.sessions.to.db: true
+chatbot:
+   api.key: ${BRILL_PROD_CHATBOT_API_KEY}
+   api.url: https://api.openai.com/v1/chat/completions
+   model: gpt-3.5-turbo
+   timeout: 120
 logging:
     level:
         web: INFO

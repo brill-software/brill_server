@@ -38,10 +38,11 @@
     "name": "database.username",
     "type": "java.lang.String",
     "description": "Database username."
-  },{
+  },
+  {
     "name": "database.password",
     "type": "java.lang.String",
-    "description": "Database password or a system environment variable enclosed in ${ and }. e.g. {BRILL_DATABASE_PWD}"
+    "description": "Database password or a system environment variable enclosed in ${ and }. e.g. {BRILL_PROD_DATABASE_PWD}"
   },
   {
     "name": "brill.apps.repo",
@@ -77,5 +78,25 @@
     "name": "logging.level.brill",
     "type": "java.lang.Boolean",
     "description": "Set the log level to TRACE, DEBUG, INFO, WARN, ERROR or FATAL. Set to TRACE to see the JSON messages exchanged between the server and clients."
+  },
+  {
+    "name": "chatbot.api.key",
+    "type": "java.lang.String",
+    "description": "The Chatbot Key for accessing the API."
+  },
+  {
+    "name": "chatbot.api.url",
+    "type": "java.lang.String",
+    "description": "The Chatbot API URL."
+  },
+  {
+    "name": "chatbot.model",
+    "type": "java.lang.String",
+    "description": "The Chatbot model. e.g. gpt-3.5-turbo"
+  },
+  {
+    "name": "chatbot.timeout",
+    "type": "java.lang.Integer",
+    "description": "The Chatbot timeout period in seconds."
   }
 ]}
