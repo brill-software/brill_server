@@ -52,10 +52,14 @@ public class ChatbotController {
      * HTML and JSON can be specified but the answers don't always come back with the same markup, even for the same
      * question. Markdown is the most reliable format to get the answers in.
      * 
+     * The asyncProcessing value of "yes" means that if the user navigates to a different page while waiting for the
+     * chatbot, the next page will be displayed. Without setting this vaule, the user would have to wait for the chatbot to
+     * responsed before they can doing anything else.
+     * 
      * @param session Web Socket session.
      * @param message The content containing previous messages and the latest message.
      */
-    @Event(value = "request", topicMatches = "chatbot:/.*", permission="chatbot")
+    @Event(value = "request", topicMatches = "chatbot:/.*", permission="chatbot", asyncProcessing="Yes")
     public void sendToChatbot(@Session WebSocketSession session, @Message JsonObject message) {
         String topic = "";
         try {

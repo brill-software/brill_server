@@ -24,4 +24,5 @@ public @interface Event {
     public String value() default "";
     public String topicMatches() default "";
     public String permission() default "";
+    public String asyncProcessing() default "No";
 }

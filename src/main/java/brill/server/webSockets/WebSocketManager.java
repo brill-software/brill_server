@@ -3,6 +3,7 @@ package brill.server.webSockets;
 
 import java.io.StringReader;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -17,17 +18,23 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.PongMessage;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import brill.server.exception.SecurityServiceException;
 import brill.server.service.DatabaseService;
 import brill.server.service.SecurityService;
 import brill.server.service.WebSocketService;
-import brill.server.utils.LogUtils;
 import brill.server.webSockets.annotations.*;
 import static java.lang.String.format;
+import static brill.server.config.WebSocketConfig.WEB_SOCKET_MAX_MESSAGE_SIZE;
+import static brill.server.config.WebSocketConfig.WEB_SOCKET_SNED_TIMEOUT_MS;
 
 /**
  * WebSocket Manager - handles incomming WebSocket text messages.
+ * 
+ * The handleTextMessage() method is called to handle each recieved message. Within a session, messages are processed
+ * sequentially excpet when asyncProcessing is set to "yes", in which case concurrent processing can occur.
+ * Concurrent processing is only required for messages that take a long time to process, such as a request to a chatbot.
  * 
  */
 @Component
@@ -56,7 +63,11 @@ public class WebSocketManager extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws java.lang.Exception {
-        webSocketSessionManager.addSession(session);
+        // Allow more that one thread to be able to sned a message to a session. Messages are queued and sent sequentially.
+        ConcurrentWebSocketSessionDecorator cswd = new ConcurrentWebSocketSessionDecorator(session, 
+            WEB_SOCKET_SNED_TIMEOUT_MS, WEB_SOCKET_MAX_MESSAGE_SIZE);
+        webSocketSessionManager.addSession(cswd);
+        super.afterConnectionEstablished(cswd);
     }
 
     @Override
@@ -75,7 +86,6 @@ public class WebSocketManager extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession session, TextMessage request) {
         String topic = "";
         try {
-            log.trace("IP: " + session.getRemoteAddress() + " Msg: " + LogUtils.truncate(request.getPayload()));
             int callCount = 0;
             JsonObject message = Json.createReader(new StringReader(request.getPayload())).readObject();
             String event = message.containsKey("event") ? message.getString("event") : "";
@@ -97,7 +107,23 @@ public class WebSocketManager extends TextWebSocketHandler {
                             if (permission.length() > 0) {
                                 securityService.checkUserHasPermission(session, event, topic, permission);
                             }
-                            method.invoke(wsController, getParams(method, session, message));
+
+                            String asyncProcessing =  eventAnnotation.asyncProcessing();
+
+                            // WebSocket messages are noramlly processed sequentially for a session. By setting the annotation asyncProcessing to
+                            // "yes" or "true", the next message is processed without waiting for the current message processing to complete.
+                            if (asyncProcessing.equalsIgnoreCase("yes") || asyncProcessing.equalsIgnoreCase("true")) {
+                                Thread newThread = new Thread(() -> {
+                                    try {
+                                        method.invoke(wsController, getParams(method, session, message));
+                                    } catch (IllegalAccessException | InvocationTargetException e) {
+                                        log.error(e.getMessage());
+                                    } 
+                                });
+                                newThread.start();
+                            } else {
+                                method.invoke(wsController, getParams(method, session, message));
+                            }
                             callCount++;
                         }
                     }
