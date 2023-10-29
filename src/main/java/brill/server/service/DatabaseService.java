@@ -10,6 +10,7 @@ import brill.server.database.CachedConnection;
 import brill.server.database.Database;
 import static java.lang.String.format;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 
 
 /**
@@ -115,7 +116,27 @@ public class DatabaseService {
             int rowsUpdated = conn.executeUpdate("update brill_cms_user set password = ?, changePassword = 'N' where username = ?",
                     format("{\"password\": \"%s\", \"username\": \"%s\"}", newPwdHash, user));
 
-            System.out.println("Rows updated = " + rowsUpdated);
+            if (rowsUpdated != 1) {
+                throw new SQLException("Failed to update password.");
+            }
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
+        }
+    }
+
+    public void updateLastLoginDateTime(String user) throws SQLException {
+        CachedConnection conn = null;
+        try {
+            conn = database.getConnection();
+
+            int rowsUpdated = conn.executeUpdate("update brill_cms_user set last_login = ? where username = ?",
+                format("{\"last_login\": \"%s\", \"username\": \"%s\"}", LocalDateTime.now().toString() , user));
+                   
+            if (rowsUpdated != 1) {
+                throw new SQLException("Failed to update login details.");
+            }
         } finally {
             if (conn != null) {
                 conn.close();

@@ -79,8 +79,19 @@ public class AuthenticationController {
      * cleartext password. The decrypted SHA-256 hash is used as the password by the server. The password is stored in the 
      * DB using a PBKDF2WithHmacSHA384 hash with a random salt and random iteration count.
      * 
-     * Use is made of request/response messaging, rather than publish/subscribe, as its more secure. The password is encrypted using
+     * Use is made of request/response messaging, rather than publish/subscribe. The password is encrypted using
      * the Shared Secret and AES encryption.
+     * 
+     * To hack into the admin account in case of loss of password, in application.yml set
+     * 
+     *      passwords.allowClearText: true
+     * 
+     * and re-start the server. Use MySQL Workbench to update the password field with a new clear text password. The clear text 
+     * password must meet the password rules such as at least 8 characters and not easy to guess, otherwise it won't work.
+     * 
+     * Login and change the password. This will result in the changed password getting stored in the database as a hash.
+     * 
+     * Remeber to change passwords.allowClearText back to false.
      * 
      * Example:
      *  {"event":"request", "topic": "auth:/app_name/authenticate", "content": {"username":"chris", "password":"...32 bytes hex encoded ..."}}
@@ -99,10 +110,6 @@ public class AuthenticationController {
             String encryptedPassword = JsonUtils.getString(credentials, "password");
             String password = wsService.decrypt(session, encryptedPassword);
 
-            // To hack into an account, uncomment code, attempt a login and copy the hashed password into the database row for the user.
-            // String pwd = pwdService.hashPassword(username, password);
-            // log.error("******* Pwd = " + pwd);
-
             JsonObject response = db.getUserDetails(username);
             if (response == null) {
                 wsService.sendErrorToClient(session, topic, "Login failed", "Incorrect Username / Password.", WebSocketService.WARNING_SEVERITY);
@@ -114,6 +121,7 @@ public class AuthenticationController {
                 return;
             }
 
+            db.updateLastLoginDateTime(username);
             wsService.setUsername(session, username);
             wsService.setName(session, response.getString("name"));
             wsService.setEmail(session, response.getString("email"));
@@ -180,12 +188,13 @@ public class AuthenticationController {
             // Check the password in the reconnect request.
             String decryptedPwd = wsService.decrypt(session, pwd);     
             if (!pwdService.isValidReconnectPassword(username, previousSessionId, decryptedPwd)) {
-                // We shouldn't normally get here. If we do, it's a hacker that needs to be investigated and delt with.
+                // We shouldn't normally get here. If we do, it's a hacker that needs to be investigated and delt with!
                 log.error(format("Security Violation on Reconnect: username: %s", username));
                 wsService.setUsername(session, "");
                 wsService.setPermissions(session, "");
-                wsService.sendErrorToClient(session, topic, "Authentication Failure", "Unable to re-connect session. Please logout and log back in.", WebSocketService.WARNING_SEVERITY);
-                
+                wsService.sendErrorToClient(session, topic, "Authentication Failure", 
+                    "Unable to re-connect session. Please logout and log back in.", 
+                    WebSocketService.WARNING_SEVERITY);
                 return;
             }
 

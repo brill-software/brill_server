@@ -82,6 +82,7 @@ CREATE TABLE `brill_cms_user` (
   `permissions` varchar(512) NOT NULL,
   `hidden_apps` varchar(512) DEFAULT NULL,
   `changePassword` varchar(1) NOT NULL,
+  `last_login` datetime DEFAULT NULL,
   `deleted` varchar(1) DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `username_UNIQUE` (`username`)
@@ -94,7 +95,7 @@ CREATE TABLE `brill_cms_user` (
 
 LOCK TABLES `brill_cms_user` WRITE;
 /*!40000 ALTER TABLE `brill_cms_user` DISABLE KEYS */;
-INSERT INTO `brill_cms_user` VALUES (1,'admin','Administrator','admin@brill.software',NULL,'Development','file_read,file_write,git_read,git_write,cms_user,change_workspace,cms_admin,db_write,chatbot',NULL,'N','N');
+INSERT INTO `brill_cms_user` VALUES (1,'admin','Administrator','admin@brill.software',NULL,'Development','file_read,file_write,git_read,git_write,cms_user,change_workspace,cms_admin,db_write,chatbot',NULL,'N',NULL,'N');
 /*!40000 ALTER TABLE `brill_cms_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
