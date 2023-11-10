@@ -3,6 +3,8 @@ package brill.server.webSockets;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.json.Json;
@@ -26,6 +28,11 @@ public class WebSocketSessionManager {
     @Value("${log.sessions.to.db:false}")
     private Boolean logSessionsToDb;
 
+    @Value("${permissions.default:}")
+    private String permissionsDefault;
+
+    private static String PERMISSIONS = "permissions";
+
     private DatabaseService db;
 
     public WebSocketSessionManager(DatabaseService db) {
@@ -43,6 +50,12 @@ public class WebSocketSessionManager {
         if (logSessionsToDb) {
             logNewSessionToDb(session);
         }
+
+        // The permissions.default parameter specifies the initial permissions the user has before they are
+        // logged in. A user might for example need db_write to complete a feedback form when not logged in. 
+        List<String> list = Arrays.asList(permissionsDefault.split(","));
+        Map<String, Object> map = session.getAttributes();
+        map.put(PERMISSIONS, list);
     }
     
     public void removeSession(WebSocketSession session) {

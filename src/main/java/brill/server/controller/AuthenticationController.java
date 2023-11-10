@@ -37,7 +37,7 @@ public class AuthenticationController {
 
     /**
      * Supports an Elliptic-curve Diffie–Hellman (ECDH) key exchange using the secp256k1 curve, for the purposes of 
-     * creating a Shared Secret. The Shared Secret is used for encrypting and decrypting and also signing and 
+     * creating a Shared Secret. The Shared Secret is used for encryption and decryption and also signing and 
      * verifying messages.
      * 
      * Use is made of the request/response messaging, as this is more secure than publish/subscribe. The request contains 

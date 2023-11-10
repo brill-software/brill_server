@@ -98,5 +98,10 @@
     "name": "chatbot.timeout",
     "type": "java.lang.Integer",
     "description": "The Chatbot timeout period in seconds."
+  },
+  {
+    "name": "permissions.default",
+    "type": "java.lang.String",
+    "description": "The default session permissions for a user that's not logged in. e.g. db_write,chatbot"
   }
 ]}
