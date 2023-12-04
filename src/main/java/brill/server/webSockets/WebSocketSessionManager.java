@@ -78,15 +78,17 @@ public class WebSocketSessionManager {
 
             HttpHeaders headers = session.getHandshakeHeaders();
             String userAgent =  headers.containsKey("user-agent") ? headers.getFirst("user-agent") : "";
-            String referrer = headers.containsKey("referer") ? headers.getFirst("referer") : "";
+            String referrer = headers.containsKey("referer") ? headers.getFirst("referer") : ""; // Mis-splet version
+            referrer = headers.containsKey("referrer") ? headers.getFirst("referrer") : "";
             String currentTime = LocalDateTime.now().toString();
+            String remoteIpAddr = session.getRemoteAddress().getAddress().toString().replace("/","");
             JsonObjectBuilder objBuilder = Json.createObjectBuilder();
             JsonObject jsonParams = objBuilder.add("sessionId", session.getId())
                 .add("startDateTime", currentTime)
                 .add("endDateTime", JsonValue.NULL)
                 .add("userAgent", userAgent)
                 .add("referrer", referrer)
-                .add("ipAddress", session.getRemoteAddress().getAddress().toString())
+                .add("ipAddress", remoteIpAddr)
                 .add("notes", "").build();
             db.executeNamedParametersUpdate(sql, jsonParams);
         } catch (SQLException e) { 
