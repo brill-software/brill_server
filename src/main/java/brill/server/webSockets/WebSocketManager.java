@@ -136,7 +136,8 @@ public class WebSocketManager extends TextWebSocketHandler {
                 log.error("More than one @Event method matches Topic " + topic);
                 wsService.sendErrorToClient(session, topic, "Server Error.", "More than one server event method for topic.");
             }
-            if (logSessionsToDb && event.equals("subscribe") && topic.contains("/Pages/")) {
+            if (logSessionsToDb && event.equals("subscribe") && topic.contains("/Pages/") && 
+                    !topic.contains("/header.json") && !topic.contains("/footer.json")) {
                 logPageAccessToDb(session, topic);
             }
         } catch (SecurityServiceException e) {
