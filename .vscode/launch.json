@@ -8,7 +8,8 @@
             "console": "internalConsole",
             "mainClass": "brill.server.BrillServerApplication",
             "projectName": "brill_server",
-            "args": "--spring.profiles.active=local"  // <<<<< Profile
+            "args": "--spring.profiles.active=local",  // <<<<< Profile
+            "vmArgs": "-Xmx1G"  // Increased Heap size
         },
         {
             "type": "java",
