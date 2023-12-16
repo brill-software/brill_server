@@ -1,4 +1,4 @@
-// © 2021 Brill Software Limited - Brill Framework, distributed under the MIT license.
+// © 2021 Brill Software Limited - Brill Framework, distributed under the MIT License.
 package brill.server.exception;
 
 public class GitServiceException extends Exception {

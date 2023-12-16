@@ -1,4 +1,3 @@
-// © 2021 Brill Software Limited - Brill Framework, distributed under the MIT license.
 package brill.server.utils;
 
 import java.io.StringReader;

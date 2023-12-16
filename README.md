@@ -1,7 +1,7 @@
 # Brill Server
 
 The Brill Server is part of the Brill Framework. The Brill Server is a Spring Boot application
-written in Java, that runs on a server machine. The Brill Server communications with Brill Clients
+written in Java, that runs on a server machine. The Brill Server communications with clients
 using the [Brill Middleware](https://brill.software/brill_software/middleware "Brill Middleware").
 
 ## Git Repository
@@ -17,7 +17,7 @@ The project is also available from:
 * GitHub (git@github.com:brill-software/brill\_server.git)
 
 To make changes, you either need permission to write to the Bitbucket repository or create a fork repository.
-You can create a fork repository on Bitbucket, Sourceforge, GitLab, GitHub, AWS CodeCommit or your own Git Server.
+You can create a fork repository on Bitbucket, Sourceforge, GitLab, GitHub or on your own Git Server.
 
 ## Brill Server Configuration
 
@@ -38,9 +38,9 @@ Other Profiles can be defined. For example `dev`, `test`, `integration`.
 
 ### Application.yml file
 
-All configuration values are held in the `/src/resources/application.yml` file
+All configuration values are held in the `/src/main/resources/application.yml` file
 
-This is an example of a section of the **application.yml** file to configure for the **local** Spring Boot profile.
+This is an example of a section of the **application.yml** file to configure the **local** Spring Boot profile.
 
 ```
 ---
@@ -71,8 +71,7 @@ logging:
         brill: TRACE
 ```
 
-Note that sensitive values such as the database username and password are passed in as operating system environment variables. These need to
-be configured in the startup script, shell or terminal configuration file.
+Note that sensitive values such as the database username and password are passed in as operating system environment variables. These need to be configured in the startup script, shell or terminal configuration file.
 
 In Visual Studio Code, use the mouse to hover over each of the values in the **application.yml** file to see a description.
 
@@ -86,7 +85,7 @@ Either use the Visual Code Spring-boot-dashboard plug-in or run from the command
 ./gradlew bootRun
 ```
 
-The profile is set in build.graddle. For example to set dev as the profile:
+The profile is set in build.graddle. For example to set **local** as the profile:
 
 ```
 bootRun {
@@ -110,14 +109,13 @@ and also handles WebSocket connections on the same port number.
 To run the process from the command line use:
 
 ```
-java -jar -Dspring.profiles.active=prod  build/libs/brill_server-0.0.1-SNAPSHOT.jar
+java -jar -Dspring.profiles.active=prod  build/libs/brill_server-1.0.0.jar
 ```
 
 #### Generateing a Self Signed Certificate
 
 Normally the **local** profile is configured to use *HTTP* and the **prod** profile to use <em>HTTPS</em>. For <em>HTTPS</em>, a Digital Certificate is
-required that was signed by a Certification Authority. For initial setup and test purposes, a self signed certificate can be used. A
-self signed certificate can be generated as follows:
+required that was signed by a Certification Authority. For initial setup and test purposes, a self signed certificate can be used. A self signed certificate can be generated as follows:
 
 ```
 keytool -genkey -alias selfsigned_localhost_sslserver -keyalg RSA -keysize 2048 -validity 700 -keypass changeit -storepass changeit -keystore ssl-server.jks
@@ -125,8 +123,7 @@ keytool -genkey -alias selfsigned_localhost_sslserver -keyalg RSA -keysize 2048 
 
 #### Generating a CSR
 
-To get a proper CA signed Digital Certificate you will need to contact your domain name provider or a Certification Authority. Follow their
-instructions. Typically they will require a CSR that is generated on the Server Machine. The following is an example of generating a CSR:
+To get a proper CA signed Digital Certificate you will need to contact your domain name provider or a Certification Authority. Follow their instructions. Typically they will require a CSR that is generated on the Server Machine. The following is an example of generating a CSR:
 
 ```
 % keytool -genkey -keysize 2048 -keyalg RSA -alias tomcat -keystore brill_keystore.jks
@@ -215,6 +212,8 @@ Create a file called **brill.server.plist** in **/Library/LaunchDaemons**
 </plist>
 ```
 
+You will need to change the BRILL\_PROD\_DATABASE\_USERNAME and BRILL\_PROD\_DATABASE\_PWD.
+
 Put the git access public and private key into the **.ssh** directory
 
 Re-boot the machine. Check that the Brill Server starts. Access the system using a web browser and check the log file for errors.
@@ -227,6 +226,25 @@ sudo launchctl unload /Library/LaunchDaemons/brill.server.plist
 sudo launchctl load /Library/LaunchDaemons/brill.server.plist
 ```
 
-## Licensing
+
+### Setting up a MySql database
+
+
+Install MySQL and the MySQL Workbench.
+
+Create an account for development use and using the Workbench run the script `databaseScripts/MySQL_BrillLocalDb.sql`.
+
+### Brill CMS Users
+
+
+User details are held in the `brill_cms_user` table. You can create new users by copying existing users using the MySQL Workbench. Provided the Brill Server `application.yml` has `passwords.allowClearText`set to <strong>true</strong>, you can enter passwords as clear text. When the user first logs in, they will be forced to change their password and from then on the password will be held in the database as a hash.
+
+### List installed versions of Java
+
+```
+/usr/libexec/java_home -V
+```
+
+## License
 
 See the LICENSE file in the root directory and the [Brill Software website](https://www.brill.software "Brill Software") for more details.

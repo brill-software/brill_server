@@ -1,4 +1,4 @@
-// © 2021 Brill Software Limited - Brill Framework, distributed under the MIT license.
+// © 2021 Brill Software Limited - Brill Framework, distributed under the MIT License.
 package brill.server.config;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +17,8 @@ import brill.server.webSockets.WebSocketManager;
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
  
-    public static int WEB_SOCKET_MAX_MESSAGE_SIZE = 1024 * 1024 * 100; // 100MB 
+    public static int WEB_SOCKET_MAX_MESSAGE_SIZE = 1024 * 1024 * 100; // 100MB
+    public static int WEB_SOCKET_SNED_TIMEOUT_MS = 120 * 1000; // 120 seconds
 
     // Normall only pages servered by the server are allowed to make WebSocket connections. To allow 
     // pages from the Development NodeJS to make WebSocket connections, the allowedOrigins must be set

@@ -1,8 +1,10 @@
-// © 2021 Brill Software Limited - Brill Framework, distributed under the MIT license.
+// © 2021 Brill Software Limited - Brill Middleware, distributed under the MIT License.
 package brill.server.webSockets;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.json.Json;
@@ -26,6 +28,11 @@ public class WebSocketSessionManager {
     @Value("${log.sessions.to.db:false}")
     private Boolean logSessionsToDb;
 
+    @Value("${permissions.default:}")
+    private String permissionsDefault;
+
+    private static String PERMISSIONS = "permissions";
+
     private DatabaseService db;
 
     public WebSocketSessionManager(DatabaseService db) {
@@ -43,6 +50,12 @@ public class WebSocketSessionManager {
         if (logSessionsToDb) {
             logNewSessionToDb(session);
         }
+
+        // The permissions.default parameter specifies the initial permissions the user has before they are
+        // logged in. A user might for example need db_write to complete a feedback form when not logged in. 
+        List<String> list = Arrays.asList(permissionsDefault.split(","));
+        Map<String, Object> map = session.getAttributes();
+        map.put(PERMISSIONS, list);
     }
     
     public void removeSession(WebSocketSession session) {
@@ -65,15 +78,17 @@ public class WebSocketSessionManager {
 
             HttpHeaders headers = session.getHandshakeHeaders();
             String userAgent =  headers.containsKey("user-agent") ? headers.getFirst("user-agent") : "";
-            String referrer = headers.containsKey("referer") ? headers.getFirst("referer") : "";
+            String referrer = headers.containsKey("referer") ? headers.getFirst("referer") : ""; // Mis-splet version
+            referrer = headers.containsKey("referrer") ? headers.getFirst("referrer") : "";
             String currentTime = LocalDateTime.now().toString();
+            String remoteIpAddr = session.getRemoteAddress().getAddress().toString().replace("/","");
             JsonObjectBuilder objBuilder = Json.createObjectBuilder();
             JsonObject jsonParams = objBuilder.add("sessionId", session.getId())
                 .add("startDateTime", currentTime)
                 .add("endDateTime", JsonValue.NULL)
                 .add("userAgent", userAgent)
                 .add("referrer", referrer)
-                .add("ipAddress", session.getRemoteAddress().getAddress().toString())
+                .add("ipAddress", remoteIpAddr)
                 .add("notes", "").build();
             db.executeNamedParametersUpdate(sql, jsonParams);
         } catch (SQLException e) { 

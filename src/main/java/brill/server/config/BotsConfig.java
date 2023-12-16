@@ -1,3 +1,4 @@
+// © 2023 Brill Software Limited - Editerprise Edition, distributed under the Brill Software Enterprise Edition License.
 package brill.server.config;
 
 import java.util.List;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 /**
+ * Enterprise Edition Module
+ * 
  * Handles requests from  bots and web crawlers and redirects the requests to a static website setup under /static/bots.
  * To enable this functionality set "server.supportBotsWebsite" to true in the application.yaml .
  * 
@@ -16,6 +19,8 @@ import org.springframework.util.StringUtils;
  * supports JavaScript but not outbound connections using WebSockets or the fallbacks of xhr-streaming or xhr-polling. This
  * class is used to detect that it's a bot request and redirect the request onto a set of bots static HTML pages. The static
  * pages can contain text from the real pages and additional text and keywords to help with SEO.
+ * 
+ * The design might be changed in the future to dynamically create the pages, thus saving the need to create the static pages.
  * 
  */
 @Service

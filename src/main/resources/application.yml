@@ -5,7 +5,7 @@
 #
 ---
 spring:
-   profiles: local
+   config.activate.on-profile: local
    application:
       name: brill_server
 server:
@@ -15,7 +15,7 @@ server:
    sessionsDirectory: sessions
 database:
    driver: com.mysql.cj.jdbc.Driver
-   url: jdbc:mysql://localhost:3306/user_db
+   url: jdbc:mysql://localhost:3306/brill_local_db?serverTimezone=UTC
    username: ${BRILL_LOCAL_DATABASE_USERNAME}
    password: ${BRILL_LOCAL_DATABASE_PWD}
 brill.apps:
@@ -26,7 +26,13 @@ brill.apps:
       skip.pull: false
 passwords.pepper: ${BRILL_LOCAL_PWDS_PEPPER}
 passwords.allowClearText: true
+permissions.default: db_write,chatbot
 log.sessions.to.db: false
+chatbot:
+   api.key: ${BRILL_LOCAL_CHATBOT_API_KEY}
+   api.url: https://api.openai.com/v1/chat/completions
+   model: gpt-3.5-turbo
+   timeout: 120
 logging:
     level:
         web: INFO
@@ -34,7 +40,7 @@ logging:
 
 ---
 spring:
-   profiles: prod
+   config.activate.on-profile: prod
    application:
       name: brill_server
 server:
@@ -52,7 +58,7 @@ server:
       key-store-type: JKS
 database:
    driver: com.mysql.cj.jdbc.Driver
-   url: jdbc:mysql://localhost:3306/brill_prod_db
+   url: jdbc:mysql://localhost:3306/brill_prod_db?serverTimezone=UTC
    username: ${BRILL_PROD_DATABASE_USERNAME}
    password: ${BRILL_PROD_DATABASE_PWD}    
 brill.apps:
@@ -61,8 +67,14 @@ brill.apps:
     local.repo.dir: BrillAppsRepo  
 passwords.pepper: ${BRILL_PROD_PWDS_PEPPER}
 passwords.allowClearText: true
+permissions.default: db_write,chatbot
 log.sessions.to.db: true
+chatbot:
+   api.key: ${BRILL_PROD_CHATBOT_API_KEY}
+   api.url: https://api.openai.com/v1/chat/completions
+   model: gpt-3.5-turbo
+   timeout: 120
 logging:
     level:
         web: INFO
-        brill: TRACE
+        brill: INFO
