@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -15,6 +16,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
+
+import brill.server.service.AutomateIPService;
 import brill.server.service.DatabaseService;
 
 /**
@@ -34,9 +37,12 @@ public class WebSocketSessionManager {
     private static String PERMISSIONS = "permissions";
 
     private DatabaseService db;
+    
+    private final AutomateIPService automateIPService;
 
-    public WebSocketSessionManager(DatabaseService db) {
+    public WebSocketSessionManager(DatabaseService db,AutomateIPService automateIPService) {
         this.db = db;
+        this.automateIPService=automateIPService;
     }
 
     private Map<String,WebSocketSession> activeSessions = new ConcurrentHashMap<String,WebSocketSession>();
@@ -70,11 +76,10 @@ public class WebSocketSessionManager {
     public Map<String,WebSocketSession> getActiveSessions() {
         return activeSessions;
     }
-
+    
     private void logNewSessionToDb(WebSocketSession session) {
-        try {
-            String sql = "insert session_log (session_id, start_date_time, end_date_time, user_agent, referrer, ip_address, notes) values ( " +
-                ":sessionId, :startDateTime, :endDateTime, :userAgent, :referrer, :ipAddress, :notes )";
+            String sql = "insert session_log (session_id, start_date_time, end_date_time, user_agent, referrer, ip_address, country, city, region_name, notes) values ( " +
+            ":sessionId, :startDateTime, :endDateTime, :userAgent, :referrer, :ipAddress, :country, :city, :regionName, :notes )";
 
             HttpHeaders headers = session.getHandshakeHeaders();
             String userAgent =  headers.containsKey("user-agent") ? headers.getFirst("user-agent") : "";
@@ -82,18 +87,43 @@ public class WebSocketSessionManager {
             referrer = headers.containsKey("referrer") ? headers.getFirst("referrer") : "";
             String currentTime = LocalDateTime.now().toString();
             String remoteIpAddr = session.getRemoteAddress().getAddress().toString().replace("/","");
+
             JsonObjectBuilder objBuilder = Json.createObjectBuilder();
-            JsonObject jsonParams = objBuilder.add("sessionId", session.getId())
-                .add("startDateTime", currentTime)
-                .add("endDateTime", JsonValue.NULL)
-                .add("userAgent", userAgent)
-                .add("referrer", referrer)
-                .add("ipAddress", remoteIpAddr)
-                .add("notes", "").build();
-            db.executeNamedParametersUpdate(sql, jsonParams);
-        } catch (SQLException e) { 
-            log.warn("Unble to log new session details to DB table session_log: " + e.getMessage()); 
-        }
+            objBuilder.add("sessionId", session.getId())
+                    .add("startDateTime", currentTime)
+                    .add("endDateTime", JsonValue.NULL)
+                    .add("userAgent", userAgent)
+                    .add("referrer", referrer)
+                    .add("ipAddress", remoteIpAddr)
+                    .add("notes", "");
+         
+            // Call the IP API asynchronously
+            CompletableFuture<Void> apiResult = automateIPService.callIpApiAsync(remoteIpAddr)
+                .thenAcceptAsync(result -> {
+                    if (result == null) {
+                        log.warn("Unable to fetch IP information for the session: " + session.getId());
+                    } else {
+                        String country = result.getString("country", "");
+                        String city = result.getString("city", "");
+                        String regionName = result.getString("regionName", "");
+
+                        objBuilder.add("country", country)
+                                .add("city", city)
+                                .add("regionName", regionName);
+                    }
+                }).exceptionally(e -> {
+                    log.error("Error while fetching IP information for the session: " + session.getId(), e);
+                    return null;
+                });
+
+            apiResult.thenRun(() -> {
+                try {
+                    JsonObject jsonParams = objBuilder.build();
+                    db.executeNamedParametersUpdate(sql, jsonParams);
+                } catch (SQLException e) {
+                    log.warn("Unable to log new session details to DB table session_log: " + e.getMessage());
+                }
+            });
     }
 
     private void logEndSessionToDb(WebSocketSession session) {
