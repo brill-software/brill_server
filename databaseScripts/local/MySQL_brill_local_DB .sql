@@ -75,7 +75,8 @@ DROP TABLE IF EXISTS `brill_cms_user`;
 CREATE TABLE `brill_cms_user` (
   `user_id` int NOT NULL AUTO_INCREMENT,
   `username` varchar(45) NOT NULL,
-  `name` varchar(45) NOT NULL,
+  `first_name` varchar(45) NOT NULL,
+  `last_name` varchar(45) NOT NULL,
   `email` varchar(45) NOT NULL,
   `workspace` varchar(45) DEFAULT NULL,
   `password` varchar(512) DEFAULT NULL,
@@ -95,7 +96,7 @@ CREATE TABLE `brill_cms_user` (
 
 LOCK TABLES `brill_cms_user` WRITE;
 /*!40000 ALTER TABLE `brill_cms_user` DISABLE KEYS */;
-INSERT INTO `brill_cms_user` VALUES (1,'admin','admin','admin@brill.software',NULL,'Development','file_read,file_write,git_read,git_write,cms_user,change_workspace,cms_admin,db_write,chatbot',NULL,'N',NULL,'N');
+INSERT INTO `brill_cms_user` VALUES (1,'admin','Admin','User','admin@brill.software',NULL,'Development','file_read,file_write,git_read,git_write,cms_user,change_workspace,cms_admin,db_write,chatbot',NULL,'N',NULL,'N');
 /*!40000 ALTER TABLE `brill_cms_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
