@@ -1,22 +1,15 @@
 // © 2021 Brill Software Limited - Brill Middleware, distributed under the MIT License.
 package brill.server.webSockets;
 
-import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
 import brill.server.service.SessionLogger;
-import brill.server.service.DatabaseService;
-
 /**
  * WebSocket Session Manager - maintains a map of the active WebSocket session id's and sessions.
  * 
@@ -24,7 +17,7 @@ import brill.server.service.DatabaseService;
 @Component
 public class WebSocketSessionManager {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WebSocketSessionManager.class);
-    private DatabaseService db;
+
     @Value("${log.sessions.to.db:false}")
     private Boolean logSessionsToDb;
 
@@ -63,7 +56,7 @@ public class WebSocketSessionManager {
 
         log.debug("Removing WebSocket session for IP address: " + session.getRemoteAddress());
         if (logSessionsToDb) { 
-           logEndSessionToDb(session);
+           sessionLogger.logEndSessionToDb(session);
         }
     }
 
@@ -73,16 +66,5 @@ public class WebSocketSessionManager {
     
     
     
-    private void logEndSessionToDb(WebSocketSession session) {
-        try {
-            String sql = "update session_log set end_date_time = :endDateTime where session_id = :sessionId";
-            String currentTime = LocalDateTime.now().toString();
-            JsonObjectBuilder objBuilder = Json.createObjectBuilder();
-            JsonObject jsonParams = objBuilder.add("sessionId", session.getId())
-                .add("endDateTime", currentTime).build();
-            db.executeNamedParametersUpdate(sql, jsonParams);
-        } catch (SQLException e) { 
-            log.warn("Unble to log end session details to DB table session_page_log: " + e.getMessage()); 
-        }
-    }
+    
 }
