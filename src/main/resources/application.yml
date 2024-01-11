@@ -31,7 +31,7 @@ log.sessions.to.db: false
 chatbot:
    api.key: ${BRILL_LOCAL_CHATBOT_API_KEY}
    api.url: https://api.openai.com/v1/chat/completions
-   model: gpt-3.5-turbo
+   model: gpt-4
    timeout: 120
 logging:
     level:
@@ -70,9 +70,10 @@ passwords.allowClearText: true
 permissions.default: db_write,chatbot
 log.sessions.to.db: true
 chatbot:
-   api.key: ${BRILL_PROD_CHATBOT_API_KEY}
+   api.key: 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
+   # api_key: ${BRILL_PROD_CHATBOT_API_KEY}
    api.url: https://api.openai.com/v1/chat/completions
-   model: gpt-3.5-turbo
+   model: gpt-4
    timeout: 120
 logging:
     level:
