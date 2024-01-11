@@ -96,7 +96,7 @@ public class JavaScriptController {
             log.error(format("%s : %s", e.getMessage(), message.toString()));
         }
         catch (Exception e) {
-            wsService.sendErrorToClient(session, topic, "JS Error", e.getMessage());
+            wsService.sendErrorToClient(session, topic, "JS Error", e.getMessage() + "\n in " + topic);
             log.error("JS exception:", e);
         }
     }
