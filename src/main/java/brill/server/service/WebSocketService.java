@@ -51,7 +51,8 @@ public class WebSocketService {
 
     private static String WORKSPACE = "workspace";
     private static String USERNAME = "username";
-    private static String NAME = "name";
+    private static String FIRST_NAME = "first_name";
+    private static String LAST_NAME = "last_name";
     private static String EMAIL = "email";
     private static String SUBSCRIPTIONS = "subscriptions";
     private static String PERMISSIONS = "permissions";
@@ -265,17 +266,34 @@ public class WebSocketService {
         session.getAttributes().put(USERNAME, username);
     }
 
-    public String getName(WebSocketSession session) {
-        String name = "";
+    public String getFirstName(WebSocketSession session) {
+        String firstName = "";
         Map<String, Object> map = session.getAttributes();
-        if (map.containsKey(NAME)) {
-            name = (String) map.get(NAME);
+        if (map.containsKey(FIRST_NAME)) {
+            firstName = (String) map.get(FIRST_NAME);
         }
-        return name;
+        return firstName;
     }
 
-    public void setName(WebSocketSession session, String name) {
-        session.getAttributes().put(NAME, name);
+    public void setFirstName(WebSocketSession session, String firstName) {
+        session.getAttributes().put(FIRST_NAME, firstName);
+    }
+
+    public String getLastName(WebSocketSession session) {
+        String lastName = "";
+        Map<String, Object> map = session.getAttributes();
+        if (map.containsKey(LAST_NAME)) {
+            lastName = (String) map.get(FIRST_NAME);
+        }
+        return lastName;
+    }
+
+    public String getName(WebSocketSession session) {
+        return this.getFirstName(session) + " " + this.getLastName(session);
+    }
+
+    public void setLastName(WebSocketSession session, String lastName) {
+        session.getAttributes().put(FIRST_NAME, lastName);
     }
 
     public String getEmail(WebSocketSession session) {

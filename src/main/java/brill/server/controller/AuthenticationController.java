@@ -126,7 +126,8 @@ public class AuthenticationController {
 
             db.updateLastLoginDateTime(username);
             wsService.setUsername(session, username);
-            wsService.setName(session, response.getString("name"));
+            wsService.setFirstName(session, response.getString("first_name"));
+            wsService.setLastName(session, response.getString("last_name"));
             wsService.setEmail(session, response.getString("email"));
             String workspace = JsonUtils.getString(response, "workspace");
             if (workspace != null && workspace.length() > 0) {

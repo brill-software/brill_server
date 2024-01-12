@@ -83,7 +83,7 @@ public class Db {
     }
 
     public String removeSpecialChars(String str) {
-        return str.replaceAll("[^a-zA-Z0-9]", "");
+        return str.replaceAll("[^a-zA-Z0-9_]", "");
     }
 
 }
