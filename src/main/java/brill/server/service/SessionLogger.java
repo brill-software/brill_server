@@ -3,14 +3,11 @@ package brill.server.service;
 import java.net.HttpURLConnection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.Map;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -22,61 +19,37 @@ import brill.server.exception.AutomateIPException;
 public class SessionLogger {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SessionLogger.class);
     
-    private int requestCounter=45;
-
-    private int discardCounter=45;
-    
-    private static final int MAX_REQUESTS_PER_MINUTE = 45;
-
-    private static final int RESET_DISCARD_COUNTER = 45;
-    
-    private static final int TIMEOUT = 60;
-
     @Value("${log.sessions.to.db:false}")
     private Boolean logSessionsToDb;
-    
-    @Value("${log.ip.session.to.api:false}")
-    private Boolean logSessionToAPI;
 
-    private SortSessionIP sortSessionIP;
-    
+
+
+    private static final int TIMEOUT = 60;
+
+    private IPGeolocationService ipGeolocationService;
     private DatabaseService db;
     
-    public SessionLogger(DatabaseService db){
-        this.db=db;
+    public SessionLogger(DatabaseService db, IPGeolocationService ipGeolocationService){
+        this.db = db;
+        this.ipGeolocationService = ipGeolocationService;
     }
     
     public void logNewSessionToDb(String sessionId, HttpHeaders headers, String remoteIpAddr){
         if (!logSessionsToDb) {
             return;
-        }else if (!logSessionsToDb||!canMakeRequest()) {
-            Thread apiThread=new Thread(() ->{try {
-                logNewSession(sessionId, headers, remoteIpAddr);
-            } catch (AutomateIPException e) {
-                e.printStackTrace();
-            }});
-            apiThread.start();            
         }
-
+       
+        Thread apiThread=new Thread(
+            () -> { 
+                    try {
+                        logNewSession(sessionId, headers, remoteIpAddr);
+                    } catch (Exception e) {
+                        log.error("Unexpected exception", e);
+                    }
+                });
+        apiThread.start();            
     }
-    //The maximin request send to api per minute is 45
-    private boolean canMakeRequest(){
-        if (requestCounter>0) {
-            requestCounter--;
-            return true;
-        }else{
-            if (discardCounter>0) {
-                log.warn("Max requests per minute reached. Skipping next "+ discardCounter+" API requests.");
-                discardCounter--;
-                return false;                
-            }else{
-                requestCounter=MAX_REQUESTS_PER_MINUTE-1;
-                discardCounter=RESET_DISCARD_COUNTER;
-                return true;
-            }
 
-        }
-    }
     
     private void logNewSession(String sessionId, HttpHeaders headers, String remoteIpAddr) throws AutomateIPException{
             remoteIpAddr=remoteIpAddr.replace("/","");
@@ -92,44 +65,44 @@ public class SessionLogger {
                         .add("userAgent", userAgent)
                         .add("ipAddress", remoteIpAddr)
                         .add("notes", "");
-                if (logSessionToAPI) {
-                    // here we call the request to ip_api to get the city, country of the session
-                    // the Json response could be customized from the ip_api website:https://ip-api.com/docs/api:json  
-                    List<String>theLocation=new ArrayList<String>();
-                    theLocation=sortSessionIP.findIPLocation(remoteIpAddr);
-                    objBuilder.add("country", theLocation.get(0));
-                    objBuilder.add("city", theLocation.get(1));
-                    objBuilder.add("regionName", theLocation.get(2));
-                    objBuilder.add("messages", remoteIpAddr);
-                }
+               
+                // here we call the request to ip_api to get the city, country of the session
+                // the Json response could be customized from the ip_api website:https://ip-api.com/docs/api:json 
+
+                Map<String,String> location = ipGeolocationService.findIPLocation(remoteIpAddr);
+                objBuilder.add("country", (location != null ? location.get("country") : ""))
+                        .add("city", (location != null ? location.get("city") : ""))
+                        .add("regionName", (location != null ? location.get("regionName") : ""));           
+    
                 JsonObject jsonParams = objBuilder.build();
                 db.executeNamedParametersUpdate(sql, jsonParams);
-            }catch(SQLException e){
-                log.warn("Error while updating session end time in the database: ", e.getMessage());
+
+            } catch(SQLException e){
+                log.warn("SessionLogger: ", e.getMessage());
             } 
             catch (Exception e) {
                 switch (HttpURLConnection.HTTP_INTERNAL_ERROR) {
                     case 400:
                         log.error("Bad request. (400)");
+                        break;
                     case 401:
                         log.error("Unauthorized. (401)");
+                        break;
                     case 404:
                         log.error("IP_API not available. (404)");
+                        break;
                     case 429:
-                        log.warn("Too many requests. Resetting request counter. (429)");
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ignored) {
-                            Thread.currentThread().interrupt();
-                        }
-                        requestCounter = MAX_REQUESTS_PER_MINUTE;
-                        discardCounter=RESET_DISCARD_COUNTER;
+                        log.warn("Too many requests. Discarding next 100 request. (429)");
+                        break;
                     case 502:
                         log.error("Bad gateway. (502)");
+                        break;
                     case HttpURLConnection.HTTP_CLIENT_TIMEOUT:
                         log.error("Timeout: No response received within " + TIMEOUT + " seconds.");
+                        break;
                     case HttpURLConnection.HTTP_INTERNAL_ERROR:
                         log.error("Internal server error.");
+                        break;
                     default:
                         if (HttpURLConnection.HTTP_INTERNAL_ERROR != HttpURLConnection.HTTP_OK) {
                             log.error("Response error. (" + HttpURLConnection.HTTP_INTERNAL_ERROR + ")");
@@ -149,38 +122,4 @@ public class SessionLogger {
             log.warn("Unble to log end session details to DB table session_page_log: " + e.getMessage()); 
         }
     }
-    
-    /*
-    private void handleException(int responseCode) throws AutomateIPException {
-        switch (responseCode) {
-            case 400:
-                throw new AutomateIPException("Bad request. (400)");
-            case 401:
-                throw new AutomateIPException("Unauthorized. (401)");
-            case 404:
-                throw new AutomateIPException("IP_API not available. (404)");
-            case 502:
-                throw new AutomateIPException("Bad gateway. (502)");
-            case HttpURLConnection.HTTP_CLIENT_TIMEOUT:
-                throw new AutomateIPException("Timeout: No response received within " + TIMEOUT + " seconds.");
-            case HttpURLConnection.HTTP_INTERNAL_ERROR:
-                throw new AutomateIPException("Internal server error.");
-            default:
-                if (responseCode != HttpURLConnection.HTTP_OK) {
-                    throw new AutomateIPException("Response error. (" + responseCode + ")");
-                }
-        }
-    }
-    */
-    
-    /* 
-    public void exportResult(JsonArray result) {
-        try (FileWriter file = new FileWriter("result.json")) {
-            file.write(result.toString());
-            System.out.println("Result exported to result.json");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    */
 }
