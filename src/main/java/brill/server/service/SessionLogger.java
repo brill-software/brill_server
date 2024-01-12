@@ -21,7 +21,15 @@ import brill.server.exception.AutomateIPException;
 @Service
 public class SessionLogger {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SessionLogger.class);
+    
+    private int requestCounter=45;
 
+    private int discardCounter=45;
+    
+    private static final int MAX_REQUESTS_PER_MINUTE = 45;
+
+    private static final int RESET_DISCARD_COUNTER = 45;
+    
     private static final int TIMEOUT = 60;
 
     @Value("${log.sessions.to.db:false}")
@@ -41,13 +49,33 @@ public class SessionLogger {
     public void logNewSessionToDb(String sessionId, HttpHeaders headers, String remoteIpAddr){
         if (!logSessionsToDb) {
             return;
+        }else if (!logSessionsToDb||!canMakeRequest()) {
+            Thread apiThread=new Thread(() ->{try {
+                logNewSession(sessionId, headers, remoteIpAddr);
+            } catch (AutomateIPException e) {
+                e.printStackTrace();
+            }});
+            apiThread.start();            
         }
-        Thread apiThread=new Thread(() ->{try {
-            logNewSession(sessionId, headers, remoteIpAddr);
-        } catch (AutomateIPException e) {
-            e.printStackTrace();
-        }});
-        apiThread.start();
+
+    }
+    //The maximin request send to api per minute is 45
+    private boolean canMakeRequest(){
+        if (requestCounter>0) {
+            requestCounter--;
+            return true;
+        }else{
+            if (discardCounter>0) {
+                log.warn("Max requests per minute reached. Skipping next "+ discardCounter+" API requests.");
+                discardCounter--;
+                return false;                
+            }else{
+                requestCounter=MAX_REQUESTS_PER_MINUTE-1;
+                discardCounter=RESET_DISCARD_COUNTER;
+                return true;
+            }
+
+        }
     }
     
     private void logNewSession(String sessionId, HttpHeaders headers, String remoteIpAddr) throws AutomateIPException{
@@ -87,6 +115,15 @@ public class SessionLogger {
                         log.error("Unauthorized. (401)");
                     case 404:
                         log.error("IP_API not available. (404)");
+                    case 429:
+                        log.warn("Too many requests. Resetting request counter. (429)");
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException ignored) {
+                            Thread.currentThread().interrupt();
+                        }
+                        requestCounter = MAX_REQUESTS_PER_MINUTE;
+                        discardCounter=RESET_DISCARD_COUNTER;
                     case 502:
                         log.error("Bad gateway. (502)");
                     case HttpURLConnection.HTTP_CLIENT_TIMEOUT:
