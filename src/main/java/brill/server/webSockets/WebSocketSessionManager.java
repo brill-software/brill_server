@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
-import brill.server.service.SessionLogger;
+import brill.server.service.SessionLoggerService;
 /**
  * WebSocket Session Manager - maintains a map of the active WebSocket session id's and sessions.
  * 
@@ -27,9 +27,9 @@ public class WebSocketSessionManager {
     private static String PERMISSIONS = "permissions";
 
     
-    private final SessionLogger sessionLogger;
+    private final SessionLoggerService sessionLogger;
     
-    public WebSocketSessionManager(SessionLogger sessionLogger) {
+    public WebSocketSessionManager(SessionLoggerService sessionLogger) {
         this.sessionLogger = sessionLogger;
     }
 
@@ -42,7 +42,8 @@ public class WebSocketSessionManager {
 
         log.debug("New WebSocket session for IP address: " + session.getRemoteAddress());
 
-        sessionLogger.logNewSessionToDb(session.getId(), session.getHandshakeHeaders(), session.getRemoteAddress().toString());
+        String userAgent =  session.getHandshakeHeaders().containsKey("user-agent") ? session.getHandshakeHeaders().getFirst("user-agent") : "";
+        sessionLogger.logNewSessionToDb(session.getId(), userAgent, session.getRemoteAddress().toString());
 
         // The permissions.default parameter specifies the initial permissions the user has before they are
         // logged in. A user might for example need db_write to complete a feedback form when not logged in. 
