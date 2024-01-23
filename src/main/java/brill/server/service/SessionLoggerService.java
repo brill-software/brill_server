@@ -48,17 +48,24 @@ public class SessionLoggerService {
     
     public void logNewSession(String sessionId, String userAgent, String remoteIpAddr) throws AutomateIPException{
             remoteIpAddr=remoteIpAddr.replace("/","");
-            String sql = "insert session_log (session_id, start_date_time, end_date_time, user_agent, ip_address, country, city, region, notes) values ( " +
-                ":sessionId, :startDateTime, :endDateTime, :userAgent, :ipAddress, :country, :city, :region, :notes )";
+            String sqlCheck = "SELECT COUNT(*) FROM session_log WHERE session_id = :sessionId";
+            String sqlInsert = "insert session_log (session_id, start_date_time, end_date_time, user_agent, ip_address, country, city, region) values ( " +
+                ":sessionId, :startDateTime, :endDateTime, :userAgent, :ipAddress, :country, :city, :region )";
             String currentTime = LocalDateTime.now().toString();
             try {
+                // Check if the session already exists
+                JsonObjectBuilder objBuilderCheck = Json.createObjectBuilder();
+                objBuilderCheck.add("sessionId", sessionId);
+                JsonObject jsonParamsCheck = objBuilderCheck.build();
+                int existingSessions = db.queryUsingNamedParameters(sqlCheck, jsonParamsCheck).getJsonObject(0).getInt("COUNT(*)");
+               
+                if (existingSessions == 0) {
                 JsonObjectBuilder objBuilder = Json.createObjectBuilder();
                 objBuilder.add("sessionId", sessionId)
                         .add("startDateTime", currentTime)
                         .add("endDateTime", JsonValue.NULL)
                         .add("userAgent", userAgent)
-                        .add("ipAddress", remoteIpAddr)
-                        .add("notes", "");
+                        .add("ipAddress", remoteIpAddr);
                
                 // here we call the request to ip_api to get the city, country of the session
                 // the Json response could be customized from the ip_api website:https://ip-api.com/docs/api:json 
@@ -69,8 +76,11 @@ public class SessionLoggerService {
                         .add("region", (location != null ? location.get("regionName") : ""));           
     
                 JsonObject jsonParams = objBuilder.build();
-                db.executeNamedParametersUpdate(sql, jsonParams);
-
+                db.executeNamedParametersUpdate(sqlInsert, jsonParams);
+            } else {
+                // Session already exists, you can log or handle this case as needed
+                log.warn("Session with sessionId '{}' already exists. Skipping insertion.", sessionId);
+            }
             } catch(SQLException e){
                 log.warn("SessionLogger: " + e.getMessage());
             } 

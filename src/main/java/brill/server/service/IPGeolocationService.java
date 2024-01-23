@@ -24,11 +24,13 @@ import org.springframework.stereotype.Service;
 public class IPGeolocationService {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(IPGeolocationService.class);
 
+    private static int responseStatus;
+
     private static final int TIMEOUT = 60;
 
     private boolean serviceEnabled;
 
-    public IPGeolocationService(@Value("${log.ip.session.to.api:false}") Boolean serviceEnabled) {
+    public IPGeolocationService(@Value("${log.ip.session.to.geolocation:false}") Boolean serviceEnabled) {
         this.serviceEnabled = serviceEnabled;
     }
     
@@ -59,8 +61,9 @@ public class IPGeolocationService {
             connection.setDoOutput(true);
             connection.setDoInput(true);
 
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
+            //int responseCode 
+            responseStatus = connection.getResponseCode();
+            if (responseStatus == HttpURLConnection.HTTP_OK) {
                 try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                     String inputLine;
                     StringBuilder response = new StringBuilder();
@@ -82,31 +85,44 @@ public class IPGeolocationService {
                     String remainingCount = connection.getHeaderField("X-Rl");
                     log.trace("Remaining count = " + remainingCount);
 
+                    int remainingRequests= Integer.parseInt(remainingCount);
+                    
                     String timeToNextReset = connection.getHeaderField("X-Ttl");
                     log.trace("Time to next reset = " + timeToNextReset);
-
+                    
+                    // Drop the request if no more remaining requests
+                    if (remainingRequests<=0) {
+                        return null;    
+                    }
                     return location; // Success
                 }
             }
-            switch (responseCode) {
-                case 400: log.error("Bad request. (400)");
-                case 401: log.error("Unauthrorized. (401)");
-                case 404: log.error("IP Geolocation API not availble. (404).");
-                case 429: log.error("Rate overflow.");
-                case 502: log.error("Bad gateway. (502).");
-                default: if (responseCode != 200) {
-                    log.error("HTTP error occurred with response code:. (" + responseCode + ")");
+            switch (responseStatus) {
+                case 400: log.error("Bad request. (400)"); break;
+                case 401: log.error("Unauthrorized. (401)"); break;
+                case 404: log.error("IP Geolocation API not availble. (404)."); break;
+                case 429: log.error("Rate overflow. (429)"); break;
+                case 502: log.error("Bad gateway. (502)."); break;
+                default: if (responseStatus != 200) {
+                    log.error("HTTP error occurred with response code:. (" + responseStatus + ")"); break;
                 }
             }
         } catch (SocketTimeoutException e) {
             log.error("Timeout: No response received within " + TIMEOUT + " seconds.");
         } catch (IOException e) {
             log.error("IO Exception occurred: ", e.getMessage());
-        } finally {
+        } catch (NullPointerException e){
+            log.error("No response");
+        }
+         finally {
             if (connection != null) {
                 connection.disconnect();
             }
         }
         return null;    
+    }
+    // New method to get the last HTTP response status
+    public int getLastResponseStatus() {
+        return responseStatus;
     }
 }

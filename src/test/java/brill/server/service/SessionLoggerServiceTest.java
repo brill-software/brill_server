@@ -2,8 +2,15 @@ package brill.server.service;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.time.LocalDateTime;
 import java.util.Random;
+
+import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,7 +45,6 @@ public class SessionLoggerServiceTest {
         String password = System.getenv("BRILL_LOCAL_DATABASE_PWD");
         assertNotNull(password);
         db = new Database(driver, url, username, password);
-
         dbService = new DatabaseService(db);
         locationService = new IPGeolocationService(true);
         service = new SessionLoggerService(true, dbService, locationService);
@@ -50,11 +56,88 @@ public class SessionLoggerServiceTest {
 
         String sessionId = "test_id-" + randomId();
         service.logNewSession(sessionId, "User Agent Test Header", "66.108.1.32");
-
+        
         // Check row is in DB.
         JsonArray result = dbService.query("select * from session_log where session_id = '" + sessionId + "'", null);
         assertTrue(result.size() == 1);
   
+        System.out.println("Running log end session test");
+        JsonObjectBuilder objBuilder=Json.createObjectBuilder();
+        JsonObject jsonParams= objBuilder.add("sessionId", sessionId)
+            .add("endDateTime",LocalDateTime.now().toString()).build();
+        dbService.executeNamedParametersUpdate("update session_log set end_date_time = :endDateTime where session_id = :sessionId", jsonParams);
+        // Check row is in DB.
+        JsonArray result2 = dbService.query("select * from session_log where session_id = '" + sessionId + "'", null);
+        assertTrue(!result2.getJsonObject(0).getString("end_date_time").isEmpty());
+          
+        System.out.println("Finished");
+    }
+
+    @Test
+    public void disabledServiceTest() throws Exception {
+        System.out.println("Running disabled service test");
+        String sessionId = "test_id-" + randomId();
+        
+        // Set the service to disabled
+        service = new SessionLoggerService(false, dbService, locationService);
+
+        // This should not throw an exception and should not log to the database
+        service.logNewSessionToDb(sessionId, "User Agent Test Header", "66.108.1.32");
+
+        // Check that there are no rows in the database for the provided session ID
+        JsonArray result = dbService.query("select * from session_log where session_id = '" + sessionId + "'", null);
+        assertTrue(result.isEmpty());
+        System.out.println("Finished");
+    }
+
+    @Test
+    public void invalidIPQuertTest() throws Exception{
+        System.out.println("Running invalid IP query test");
+        
+        String sessionId = "test_id-" + randomId();
+        //set the invalid IP address
+        service.logNewSession(sessionId, "User Agent Test Header", "1.16.63.255.0.0.0");
+        
+        // Check the response from api is empty in DB.
+        JsonArray result = dbService.query("select * from session_log where session_id = '" + sessionId + "'", null);
+        assertTrue(result.getJsonObject(0).getString("country").isEmpty());
+        assertTrue(result.getJsonObject(0).getString("city").isEmpty());
+        assertTrue(result.getJsonObject(0).getString("region").isEmpty());
+        System.out.println("Finished");
+    }
+
+    @Test
+    public void duplicateSessionIDTest() throws Exception{
+        System.out.println("Running duplicate session ID test");
+        //both request will use the same session ID
+        
+        String sessionId = "test_id-" + randomId();
+        String sqlCheckSessionCount = "SELECT COUNT(*) FROM session_log WHERE session_id = :sessionId";
+        String sqlCheckSession = "SELECT * FROM session_log WHERE session_id = :sessionId";
+        //first request
+        service.logNewSession(sessionId, "User Agent Test Header", "1.16.63.250");
+        JsonArray result = dbService.query("select * from session_log where session_id = '" + sessionId + "'", null);        
+        // Ensure the result is not empty before accessing its elements
+        assertTrue(!result.isEmpty());
+        JsonObject firstSessionLog = result.getJsonObject(0);
+        String firstCountry = firstSessionLog.getString("country");
+        String firstCity = firstSessionLog.getString("city");
+        String firstRegion = firstSessionLog.getString("region");
+        //second request
+        service.logNewSession(sessionId, "User Agent Test Header", "66.108.2.32");
+        JsonArray result2 = dbService.query("select * from session_log where session_id = '" + sessionId + "'", null);
+        // Ensure the result is not empty before accessing its elements
+        assertTrue(!result2.isEmpty());
+
+        JsonObjectBuilder objBuilderCheck = Json.createObjectBuilder();
+                objBuilderCheck.add("sessionId", sessionId);
+                JsonObject jsonParamsCheck = objBuilderCheck.build();
+        //the reponse from database should be matcched the first requset
+        assertTrue(dbService.queryUsingNamedParameters(sqlCheckSessionCount, jsonParamsCheck).getJsonObject(0).getInt("COUNT(*)")==1);
+        assertTrue(dbService.queryUsingNamedParameters(sqlCheckSession, jsonParamsCheck).getJsonObject(0).getString("country").equals(firstCountry));
+        assertTrue(dbService.queryUsingNamedParameters(sqlCheckSession, jsonParamsCheck).getJsonObject(0).getString("city").equals(firstCity));
+        assertTrue(dbService.queryUsingNamedParameters(sqlCheckSession, jsonParamsCheck).getJsonObject(0).getString("region").equals(firstRegion));
+
         System.out.println("Finished");
     }
 

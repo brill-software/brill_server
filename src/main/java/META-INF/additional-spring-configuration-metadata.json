@@ -105,7 +105,7 @@
     "description": "The default session permissions for a user that's not logged in. e.g. db_write,chatbot"
   },
   {
-    "name": "log.ip.session.to.api",
+    "name": "log.ip.session.to.geolocation",
     "type": "java.lang.Boolean",
     "description": "When set to true, session IP information is converted to real location, remember to set the 'log.session.to.db' to true"
   }

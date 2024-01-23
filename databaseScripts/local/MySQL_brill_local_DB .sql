@@ -140,9 +140,10 @@ CREATE TABLE `session_log` (
   `start_date_time` datetime DEFAULT NULL,
   `end_date_time` datetime DEFAULT NULL,
   `user_agent` varchar(512) DEFAULT NULL,
-  `referrer` varchar(1024) DEFAULT NULL,
   `ip_address` varchar(45) DEFAULT NULL,
-  `notes` varchar(1024) DEFAULT NULL,
+  `country` varchar(45) DEFAULT NULL,
+  `city` varchar(45) DEFAULT NULL,
+  `region` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`session_log_id`,`session_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
