@@ -132,9 +132,10 @@ public class AuthenticationController {
             String workspace = JsonUtils.getString(response, "workspace");
             if (workspace != null && workspace.length() > 0) {
                 if (!gitService.doesWorkspaceAlreadyExist(workspace)) {
-                   // Create the workspace
+                   // Create the workspace, checkout develop branch and create branch with <username>_changes
                    wsService.sendErrorToClient(session, topic, "Creating Workspace", "Please wait while the workspace is created.", INFO_SEVERITY);
-                   gitService.createNewWorkspace(workspace, "master");
+                   gitService.createNewWorkspace(workspace, "develop");
+                   gitService.createNewBranch(workspace, "develop", username + "_changes");
                 }
                 wsService.setWorkspace(session, workspace);
             }
