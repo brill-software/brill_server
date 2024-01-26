@@ -15,7 +15,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
- * IP Geolocation Service - finds the Country, City and Region of an IP address using the ip-api.com service.
+ * IP Geolocation Service - finds the Country, City and Region of an IP address
+ * using the ip-api.com service.
  * 
  * See https://ip-api.com/docs/api:json for details of the API.
  * 
@@ -33,21 +34,21 @@ public class IPGeolocationService {
     public IPGeolocationService(@Value("${log.ip.session.to.geolocation:false}") Boolean serviceEnabled) {
         this.serviceEnabled = serviceEnabled;
     }
-    
+
     /**
      * 
      * 
      * @param remoteIpAddr
      * @return Either a map containing the country, city and regionName or null.
      */
-    public Map<String,String> findIPLocation(String remoteIpAddr) {
+    public Map<String, String> findIPLocation(String remoteIpAddr) {
         if (!serviceEnabled) {
             return null;
         }
 
-        Map<String,String> location = new TreeMap<String,String>();
+        Map<String, String> location = new TreeMap<String, String>();
         String IP_API_Request = "?lang=en&fields=50205";
-        String ipApiUrl = "http://ip-api.com/json/" + remoteIpAddr + IP_API_Request;
+        String ipApiUrl = "http://ip-apiX.com/json/" + remoteIpAddr + IP_API_Request;
         HttpURLConnection connection = null;
 
         try {
@@ -61,7 +62,7 @@ public class IPGeolocationService {
             connection.setDoOutput(true);
             connection.setDoInput(true);
 
-            //int responseCode 
+            // int responseCode
             responseStatus = connection.getResponseCode();
             if (responseStatus == HttpURLConnection.HTTP_OK) {
                 try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
@@ -77,7 +78,7 @@ public class IPGeolocationService {
                     String country = ipApiResponse.getString("country");
                     String city = ipApiResponse.getString("city");
                     String regionName = ipApiResponse.getString("regionName");
-                    location.put("country",country);
+                    location.put("country", country);
                     location.put("city", city);
                     location.put("regionName", regionName);
 
@@ -85,42 +86,54 @@ public class IPGeolocationService {
                     String remainingCount = connection.getHeaderField("X-Rl");
                     log.trace("Remaining count = " + remainingCount);
 
-                    int remainingRequests= Integer.parseInt(remainingCount);
-                    
+                    int remainingRequests = Integer.parseInt(remainingCount);
+
                     String timeToNextReset = connection.getHeaderField("X-Ttl");
                     log.trace("Time to next reset = " + timeToNextReset);
-                    
+
                     // Drop the request if no more remaining requests
-                    if (remainingRequests<=0) {
-                        return null;    
+                    if (remainingRequests <= 0) {
+                        return null;
                     }
                     return location; // Success
                 }
             }
             switch (responseStatus) {
-                case 400: log.error("Bad request. (400)"); break;
-                case 401: log.error("Unauthrorized. (401)"); break;
-                case 404: log.error("IP Geolocation API not availble. (404)."); break;
-                case 429: log.error("Rate overflow. (429)"); break;
-                case 502: log.error("Bad gateway. (502)."); break;
-                default: if (responseStatus != 200) {
-                    log.error("HTTP error occurred with response code:. (" + responseStatus + ")"); break;
-                }
+                case 400:
+                    log.error("Bad request. (400)");
+                    break;
+                case 401:
+                    log.error("Unauthrorized. (401)");
+                    break;
+                case 404:
+                    log.error("IP Geolocation API not availble. (404).");
+                    break;
+                case 429:
+                    log.error("Rate overflow. (429)");
+                    break;
+                case 502:
+                    log.error("Bad gateway. (502).");
+                    break;
+                default:
+                    if (responseStatus != 200) {
+                        log.error("HTTP error occurred with response code:. (" + responseStatus + ")");
+                        break;
+                    }
             }
         } catch (SocketTimeoutException e) {
             log.error("Timeout: No response received within " + TIMEOUT + " seconds.");
         } catch (IOException e) {
             log.error("IO Exception occurred: ", e.getMessage());
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             log.error("No response");
-        }
-         finally {
+        } finally {
             if (connection != null) {
                 connection.disconnect();
             }
         }
-        return null;    
+        return null;
     }
+
     // New method to get the last HTTP response status
     public int getLastResponseStatus() {
         return responseStatus;
