@@ -1,4 +1,6 @@
+// © 2021 Brill Software Limited - Brill Framework, distributed under the MIT License.
 package brill.server.controller;
+
 import javax.json.*;
 import org.springframework.web.socket.WebSocketSession;
 import brill.server.domain.Subscriber;
@@ -30,7 +32,7 @@ public class GitController {
 
     /**
      * Sets the workspaces using request/response messaging. The user requires the cms_user 
-     * and the change_workspace permissions to be able to do this. 
+     * and the cms_developer permissions to be able to do this. 
      * 
      * @param session
      * @param message
@@ -47,9 +49,9 @@ public class GitController {
             String currentWorkspace = wsService.getWorkspace(session);
 
             if (!newWorkspace.equals(currentWorkspace)) {
-                if (!wsService.hasPermission(session, "change_workspace")) {
+                if (!wsService.hasPermission(session, "cms_developer")) {
                     wsService.sendErrorToClient(session, topic, "Access Denied", 
-                        format("Sorry but you don't have permission to switch to the <b>%s</b> workspace.", newWorkspace), ERROR_SEVERITY);
+                        format("Sorry but you need the <b>cms_developer</b> permission to switch to the <b>%s</b> workspace.", newWorkspace), ERROR_SEVERITY);
                     return;
                 }
 
@@ -86,7 +88,7 @@ public class GitController {
      * @param message
      * @throws WebSocketException
      */
-    @Event(value = "request", topicMatches = "git:newbranch:/", permission="cms_user")
+    @Event(value = "request", topicMatches = "git:newbranch:/", permission="cms_developer")
     public void gitCreateNewBranch(@Session WebSocketSession session, @Message JsonObject message) throws WebSocketException {
         String topic = "";
         try {
@@ -140,7 +142,7 @@ public class GitController {
      * @param message
      * @throws WebSocketException
      */
-    @Event(value = "request", topicMatches = "git:mergebranch:/", permission="cms_user")
+    @Event(value = "request", topicMatches = "git:mergebranch:/", permission="cms_developer")
     public void mergeBranch(@Session WebSocketSession session, @Message JsonObject message) throws WebSocketException {
         String topic = "";
         try {
@@ -166,7 +168,7 @@ public class GitController {
      * @param message
      * @throws WebSocketException
      */
-    @Event(value = "request", topicMatches = "git:deletebranch:/", permission="cms_user")
+    @Event(value = "request", topicMatches = "git:deletebranch:/", permission="cms_developer")
     public void deleteBranch(@Session WebSocketSession session, @Message JsonObject message) throws WebSocketException {
         String topic = "";
         try {
@@ -193,7 +195,7 @@ public class GitController {
      * @param message
      * @throws WebSocketException
      */
-    @Event(value = "request", topicMatches = "git:checkoutbranch:/", permission="cms_user")
+    @Event(value = "request", topicMatches = "git:checkoutbranch:/", permission="cms_developer")
     public void checkoutBranch(@Session WebSocketSession session, @Message JsonObject message) throws WebSocketException {
         String topic = "";
         try {
@@ -520,11 +522,19 @@ public class GitController {
         String topic = "";
         try {
             topic = message.getString("topic");
+            String commitBranch = gitService.getCurrentBranch(wsService.getWorkspace(session));
+
+            if (commitBranch.equals("master") || commitBranch.equals("develop")) {
+                wsService.sendErrorToClient(session, topic, "Protected Branch", 
+                    format("Please make changes on your own branch first and then merge them into the <b>%s</b> branch.", commitBranch), ERROR_SEVERITY);
+                return;
+            }
+
             String commitMsg = JsonUtils.getString(message, "content");
             wsService.sendErrorToClient(session, topic, "Updating", "Please wait while the respository is updated...", INFO_SEVERITY);
             gitService.commitStagedFiles(wsService.getWorkspace(session), commitMsg, wsService.getName(session), wsService.getEmail(session));
 
-            String commitBranch = gitService.getCurrentBranch(wsService.getWorkspace(session));
+           
 
             // Publish a list of commits to any sessions that has subscribed on the same branch as the commit.
             List<Subscriber> subscribers = wsService.getSubscribers("git:commits:/");
