@@ -48,7 +48,7 @@ public class IPGeolocationService {
 
         Map<String, String> location = new TreeMap<String, String>();
         String IP_API_Request = "?lang=en&fields=50205";
-        String ipApiUrl = "http://ip-apiX.com/json/" + remoteIpAddr + IP_API_Request;
+        String ipApiUrl = "http://ip-api.com/json/" + remoteIpAddr + IP_API_Request;
         HttpURLConnection connection = null;
 
         try {

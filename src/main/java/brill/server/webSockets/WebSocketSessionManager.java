@@ -18,9 +18,6 @@ import brill.server.service.SessionLoggerService;
 public class WebSocketSessionManager {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WebSocketSessionManager.class);
 
-    @Value("${log.sessions.to.db:false}")
-    private Boolean logSessionsToDb;
-
     @Value("${permissions.default:}")
     private String permissionsDefault;
 
@@ -43,7 +40,7 @@ public class WebSocketSessionManager {
         log.debug("New WebSocket session for IP address: " + session.getRemoteAddress());
 
         String userAgent =  session.getHandshakeHeaders().containsKey("user-agent") ? session.getHandshakeHeaders().getFirst("user-agent") : "";
-        sessionLogger.logNewSessionToDb(session.getId(), userAgent, session.getRemoteAddress().toString());
+        sessionLogger.logNewSessionToDb(session.getId(), userAgent, session.getRemoteAddress().getAddress().toString());
 
         // The permissions.default parameter specifies the initial permissions the user has before they are
         // logged in. A user might for example need db_write to complete a feedback form when not logged in. 
@@ -54,18 +51,10 @@ public class WebSocketSessionManager {
     
     public void removeSession(WebSocketSession session) {
         activeSessions.remove(session.getId());
-
-        log.debug("Removing WebSocket session for IP address: " + session.getRemoteAddress());
-        if (logSessionsToDb) { 
-           sessionLogger.logEndSessionToDb(session);
-        }
+        sessionLogger.logEndSessionToDb(session.getId());
     }
 
     public Map<String,WebSocketSession> getActiveSessions() {
         return activeSessions;
     }
-    
-    
-    
-    
 }

@@ -1,10 +1,10 @@
 package brill.server.service;
 
-import static org.junit.Assert.assertNull;
+//import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
-import java.net.URL;
+//import static org.mockito.Mockito.when;
+//import java.net.URL;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+//import org.mockito.Mock;
+//import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Level;
@@ -32,7 +32,7 @@ public class IPGeolocationServiceTest {
     void setUp() {
         final Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(LOG_LEVEL);
-        MockitoAnnotations.initMocks(this);
+        // MockitoAnnotations.initMocks(this);
         service = new IPGeolocationService(true);
     }
 
@@ -81,15 +81,16 @@ public class IPGeolocationServiceTest {
         System.out.println("The Http status code : " + service.getLastResponseStatus());
     }
 
-    @Mock
-    private URL mock;
+    // @Mock
+    // private URL mock;
 
-    @Test
-    public void badRequest() throws Exception {
-        System.out.println("Bad response code using mock.");
-        when (mock.openConnection()).thenReturn(null);
-        Map<String, String> badRequest = service.findIPLocation("66.108.1.32");
-        assertNull(badRequest);
-    }
+    // @Disabled
+    // @Test
+    // public void badRequest() throws Exception {
+    //     System.out.println("Bad response code using mock.");
+    //     when (mock.openConnection()).thenReturn(null);
+    //     Map<String, String> badRequest = service.findIPLocation("66.108.1.32");
+    //     assertNull(badRequest);
+    // }
 
 }

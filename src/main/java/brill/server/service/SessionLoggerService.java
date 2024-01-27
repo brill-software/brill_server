@@ -10,8 +10,6 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.socket.WebSocketSession;
-
 import brill.server.exception.AutomateIPException;
 
 @Service
@@ -114,12 +112,16 @@ public class SessionLoggerService {
                 }
             }
     }
-    public void logEndSessionToDb(WebSocketSession session) {
+    public void logEndSessionToDb(String sessionId) {
+        if (!serviceEnabled) {
+            return;
+        }
+
         try {
             String sql = "update session_log set end_date_time = :endDateTime where session_id = :sessionId";
             String currentTime = LocalDateTime.now().toString();
             JsonObjectBuilder objBuilder = Json.createObjectBuilder();
-            JsonObject jsonParams = objBuilder.add("sessionId", session.getId())
+            JsonObject jsonParams = objBuilder.add("sessionId", sessionId)
                 .add("endDateTime", currentTime).build();
             db.executeNamedParametersUpdate(sql, jsonParams);
         } catch (SQLException e) { 

@@ -61,7 +61,7 @@ CREATE TABLE `brill_cms_permission` (
 
 LOCK TABLES `brill_cms_permission` WRITE;
 /*!40000 ALTER TABLE `brill_cms_permission` DISABLE KEYS */;
-INSERT INTO `brill_cms_permission` VALUES (1,'file_read'),(2,'file_write'),(3,'git_read'),(4,'git_write'),(5,'cms_user'),(6,'change_workspace'),(7,'cms_admin'),(8,'db_write'),(9,'chatbot');
+INSERT INTO `brill_cms_permission` VALUES (1,'file_read'),(2,'file_write'),(3,'git_read'),(4,'git_write'),(5,'cms_user'),(6,'cms_developer'),(7,'cms_admin'),(8,'db_write'),(9,'chatbot');
 /*!40000 ALTER TABLE `brill_cms_permission` ENABLE KEYS */;
 UNLOCK TABLES;
 
