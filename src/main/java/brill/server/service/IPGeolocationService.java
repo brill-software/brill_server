@@ -1,5 +1,7 @@
 package brill.server.service;
 
+import static java.lang.String.format;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,6 +16,8 @@ import javax.json.JsonObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import brill.server.exception.IPGeoServiceException;
+
 /**
  * IP Geolocation Service - finds the Country, City and Region of an IP address
  * using the ip-api.com service.
@@ -25,9 +29,11 @@ import org.springframework.stereotype.Service;
 public class IPGeolocationService {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(IPGeolocationService.class);
 
-    private static int responseStatus;
-
-    private static final int TIMEOUT = 60;
+    private static final int TIMEOUT = 20;
+    private static final int REMAINING_REQUESTS_MIN = 20;
+    private static int remainingRequests = 45;
+    private static int timeToNextReset = 60;
+    private static long lastRequestTime = 0;
 
     private boolean serviceEnabled;
 
@@ -41,13 +47,19 @@ public class IPGeolocationService {
      * @param remoteIpAddr
      * @return Either a map containing the country, city and regionName or null.
      */
-    public Map<String, String> findIPLocation(String remoteIpAddr) {
+    public Map<String, String> findIPLocation(String remoteIpAddr) throws IPGeoServiceException {
         if (!serviceEnabled) {
             return null;
         }
 
+        if (remainingRequests <= REMAINING_REQUESTS_MIN && 
+            System.currentTimeMillis() < lastRequestTime + (timeToNextReset * 1000)) {
+            throw new IPGeoServiceException("Exceeded usage limit for IP geolocation server. Time to next reset = " +
+                ((lastRequestTime + (timeToNextReset * 1000)) - System.currentTimeMillis()) / 1000 + "s.");
+        }
+
         Map<String, String> location = new TreeMap<String, String>();
-        String IP_API_Request = "?lang=en&fields=50205";
+        String IP_API_Request = "?lang=en&fields=50911";
         String ipApiUrl = "http://ip-api.com/json/" + remoteIpAddr + IP_API_Request;
         HttpURLConnection connection = null;
 
@@ -62,8 +74,7 @@ public class IPGeolocationService {
             connection.setDoOutput(true);
             connection.setDoInput(true);
 
-            // int responseCode
-            responseStatus = connection.getResponseCode();
+            int responseStatus = connection.getResponseCode();
             if (responseStatus == HttpURLConnection.HTTP_OK) {
                 try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                     String inputLine;
@@ -75,67 +86,55 @@ public class IPGeolocationService {
 
                     JsonObject ipApiResponse = Json.createReader(new StringReader(jsonResponse)).readObject();
 
-                    String country = ipApiResponse.getString("country");
-                    String city = ipApiResponse.getString("city");
-                    String regionName = ipApiResponse.getString("regionName");
-                    location.put("country", country);
-                    location.put("city", city);
-                    location.put("regionName", regionName);
+                    String status = ipApiResponse.getString("status");
+                    if (status.equals("fail")) {
+                        throw new IPGeoServiceException(ipApiResponse.getString("message"));
+                    }
+
+                    location.put("country", ipApiResponse.getString("country"));
+                    location.put("countryCode", ipApiResponse.getString("countryCode"));
+                    location.put("region", ipApiResponse.getString("region"));
+                    location.put("regionName", ipApiResponse.getString("regionName"));
+                    location.put("city", ipApiResponse.getString("city"));
+                    location.put("lat", ipApiResponse.getJsonNumber("lat").toString());
+                    location.put("lon", ipApiResponse.getJsonNumber("lon").toString());
+                    location.put("isp", ipApiResponse.getJsonNumber("lon").toString());
+                    location.put("org", ipApiResponse.getJsonNumber("lon").toString());
 
                     // Get X-Rl to see if it's getting low.
-                    String remainingCount = connection.getHeaderField("X-Rl");
-                    log.trace("Remaining count = " + remainingCount);
+                    remainingRequests = Integer.parseInt(connection.getHeaderField("X-Rl"));
+                    timeToNextReset = Integer.parseInt(connection.getHeaderField("X-Ttl"));
+                    lastRequestTime = System.currentTimeMillis();
 
-                    int remainingRequests = Integer.parseInt(remainingCount);
+                    log.trace(format("Remaining count = %s ,time to next reset = %s",remainingRequests, timeToNextReset));
 
-                    String timeToNextReset = connection.getHeaderField("X-Ttl");
-                    log.trace("Time to next reset = " + timeToNextReset);
-
-                    // Drop the request if no more remaining requests
-                    if (remainingRequests <= 0) {
-                        return null;
-                    }
                     return location; // Success
                 }
             }
             switch (responseStatus) {
                 case 400:
-                    log.error("Bad request. (400)");
-                    break;
+                    throw new IPGeoServiceException("Bad request. (400)");
                 case 401:
-                    log.error("Unauthrorized. (401)");
-                    break;
+                    throw new IPGeoServiceException("Unauthrorized. (401)");
                 case 404:
-                    log.error("IP Geolocation API not availble. (404).");
-                    break;
+                    throw new IPGeoServiceException("IP Geolocation API not availble. (404).");
                 case 429:
-                    log.error("Rate overflow. (429)");
-                    break;
+                    throw new IPGeoServiceException("Rate overflow. (429)");
                 case 502:
-                    log.error("Bad gateway. (502).");
-                    break;
+                    throw new IPGeoServiceException("Bad gateway. (502).");
                 default:
-                    if (responseStatus != 200) {
-                        log.error("HTTP error occurred with response code:. (" + responseStatus + ")");
-                        break;
-                    }
+                    throw new IPGeoServiceException(("HTTP error occurred with response code:. (" + responseStatus + ")"));
             }
         } catch (SocketTimeoutException e) {
-            log.error("Timeout: No response received within " + TIMEOUT + " seconds.");
+            throw new IPGeoServiceException("Timeout: No response received within " + TIMEOUT + " seconds.");
         } catch (IOException e) {
-            log.error("IO Exception occurred: ", e.getMessage());
+            throw new IPGeoServiceException("IO Exception occurred: " + e.getMessage());
         } catch (NullPointerException e) {
-            log.error("No response");
+            throw new IPGeoServiceException("Null pointer exception.");
         } finally {
             if (connection != null) {
                 connection.disconnect();
             }
         }
-        return null;
-    }
-
-    // New method to get the last HTTP response status
-    public int getLastResponseStatus() {
-        return responseStatus;
     }
 }

@@ -1,21 +1,15 @@
 package brill.server.service;
 
-//import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-//import static org.mockito.Mockito.when;
-//import java.net.URL;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
-//import org.mockito.Mock;
-//import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
+import brill.server.exception.IPGeoServiceException;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
@@ -71,15 +65,47 @@ public class IPGeolocationServiceTest {
         assertTrue(EmptyRequestResult.size() == 3);
     }
 
-    // we easliy comment out or change the url and check the http status
-    @Disabled
     @Test
-    public void locationLookupHttpStatusResponse() throws Exception {
-        System.out.println("Running locationLookup Http Forbidden Request Test");
-        service.findIPLocation("66.108.1.32");
-        assertEquals(403, service.getLastResponseStatus());
-        System.out.println("The Http status code : " + service.getLastResponseStatus());
+    public void usageLimit() throws Exception {
+        System.out.println("Running usage limit test");
+
+        try {
+            for (int i = 0; i < 200; i++) {
+                service.findIPLocation("66.108.1.32");
+                Thread.sleep(200);
+            }
+            assertTrue(false);
+        } catch (IPGeoServiceException e) {
+            System.out.println("Exception msg: " + e.getMessage());
+        }
+
+        System.out.println("Trying after limit reached.");      
+        int successCount = 0;
+        for (int i = 0; i < 200; i++) {
+            try {
+                Thread.sleep(1000);
+                
+                Map<String, String> result = service.findIPLocation("66.108.1.32");
+                if (result != null && successCount++ > 5) {
+                    break;
+                }
+            } catch (IPGeoServiceException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
+        System.out.println("Finished usage limit test");
     }
+
+    // we easliy comment out or change the url and check the http status
+    // @Disabled
+    // @Test
+    // public void locationLookupHttpStatusResponse() throws Exception {
+    //     System.out.println("Running locationLookup Http Forbidden Request Test");
+    //     service.findIPLocation("66.108.1.32");
+    //     assertEquals(403, service.getLastResponseStatus());
+    //     System.out.println("The Http status code : " + service.getLastResponseStatus());
+    // }
 
     // @Mock
     // private URL mock;
