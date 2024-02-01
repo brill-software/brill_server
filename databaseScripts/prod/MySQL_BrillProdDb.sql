@@ -75,6 +75,30 @@ INSERT INTO `brill_cms_user` VALUES (1,'admin','Admin', 'User','noreply@none.com
 UNLOCK TABLES;
 
 --
+-- Table structure for table `ip_address`
+--
+
+DROP TABLE IF EXISTS `ip_address`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ip_address` (
+  `ip_address_id` int NOT NULL AUTO_INCREMENT,
+  `ip_address` varchar(45) NOT NULL,
+  `country` varchar(45) DEFAULT NULL,
+  `country_code` varchar(45) DEFAULT NULL,
+  `region` varchar(45) DEFAULT NULL,
+  `region_name` varchar(45) DEFAULT NULL,
+  `city` varchar(45) DEFAULT NULL,
+  `lat` decimal(8,5) DEFAULT NULL,
+  `lon` decimal(8,5) DEFAULT NULL,
+  `isp` varchar(100) DEFAULT NULL,
+  `org` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`ip_address_id`,`ip_address`),
+  UNIQUE KEY `ip_address_id_UNIQUE` (`ip_address_id`),
+  UNIQUE KEY `ip_address_UNIQUE` (`ip_address`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+--
 -- Table structure for table `session_log`
 --
 
@@ -87,13 +111,13 @@ CREATE TABLE `session_log` (
   `start_date_time` datetime DEFAULT NULL,
   `end_date_time` datetime DEFAULT NULL,
   `user_agent` varchar(512) DEFAULT NULL,
-  `ip_address` varchar(45) DEFAULT NULL,
-  `country` varchar(45) DEFAULT NULL,
-  `city` varchar(45) DEFAULT NULL,
-  `region` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`session_log_id`,`session_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  `ip_address_id` int DEFAULT NULL,
+  PRIMARY KEY (`session_log_id`,`session_id`),
+  UNIQUE KEY `session_id_UNIQUE` (`session_id`),
+  UNIQUE KEY `session_log_id_UNIQUE` (`session_log_id`),
+  KEY `ip_address_id_idx` (`ip_address_id`),
+  CONSTRAINT `ip_address_id` FOREIGN KEY (`ip_address_id`) REFERENCES `ip_address` (`ip_address_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3661 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 
 --
 -- Table structure for table `session_page_log`

@@ -96,10 +96,10 @@ public class IPGeolocationService {
                     location.put("region", ipApiResponse.getString("region"));
                     location.put("regionName", ipApiResponse.getString("regionName"));
                     location.put("city", ipApiResponse.getString("city"));
-                    location.put("lat", ipApiResponse.getJsonNumber("lat").toString());
-                    location.put("lon", ipApiResponse.getJsonNumber("lon").toString());
-                    location.put("isp", ipApiResponse.getJsonNumber("lon").toString());
-                    location.put("org", ipApiResponse.getJsonNumber("lon").toString());
+                    location.put("lat", String.valueOf(ipApiResponse.getJsonNumber("lat").doubleValue()));
+                    location.put("lon", String.valueOf(ipApiResponse.getJsonNumber("lon").doubleValue()));
+                    location.put("isp", ipApiResponse.getString("isp"));
+                    location.put("org", ipApiResponse.getString("org"));
 
                     // Get X-Rl to see if it's getting low.
                     remainingRequests = Integer.parseInt(connection.getHeaderField("X-Rl"));

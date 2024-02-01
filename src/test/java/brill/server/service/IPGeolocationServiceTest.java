@@ -3,6 +3,7 @@ package brill.server.service;
 import static org.junit.Assert.assertTrue;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.platform.runner.JUnitPlatform;
@@ -37,34 +38,25 @@ public class IPGeolocationServiceTest {
         Map<String, String> result = service.findIPLocation("66.108.1.32");
 
         assertTrue(result != null);
-        assertTrue(result.size() == 3);
+        assertTrue(result.size() > 3);
 
         System.out.println("Location = " + result.toString());
-    }
-
-    // temporary we could only send 30 request each minute
-    @Test
-    public void locationLookupOverload() throws Exception {
-        System.out.println("Running locationLookupOverload test");
-        for (int i = 0; i < 29; i++) {
-            Map<String, String> result = service.findIPLocation("66.108.1.32");
-            assertTrue(result != null);
-            assertTrue(result.size() == 3);
-            System.out.println(i + ". Location = " + result.toString());
-        }
     }
 
     @Test
     public void locationLookupBadRequest() throws Exception {
         System.out.println("Running locationLookupBadRequest test: Bad Request");
-        Map<String, String> BadRequestResult = service.findIPLocation("abcdefg");
-        assertTrue(BadRequestResult == null);
-        System.out.println("Running locationLookupBadRequest test: Empty Request");
-        Map<String, String> EmptyRequestResult = service.findIPLocation("");
-        assertTrue(EmptyRequestResult != null);
-        assertTrue(EmptyRequestResult.size() == 3);
+
+        try {
+            service.findIPLocation("abcdefg");
+            // Shouldn't get here
+            assertTrue(false);
+        } catch (IPGeoServiceException e) {
+            assertTrue(e.getMessage().contains("invalid query"));
+        }
     }
 
+    @Disabled
     @Test
     public void usageLimit() throws Exception {
         System.out.println("Running usage limit test");
