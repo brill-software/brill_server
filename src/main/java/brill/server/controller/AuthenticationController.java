@@ -34,7 +34,6 @@ public class AuthenticationController {
         this.gitService = gitService;
     }
 
-
     /**
      * Supports an Elliptic-curve Diffie–Hellman (ECDH) key exchange using the secp256k1 curve, for the purposes of 
      * creating a Shared Secret. The Shared Secret is used for encryption and decryption and also signing and 
@@ -109,6 +108,10 @@ public class AuthenticationController {
             username = JsonUtils.getString(credentials, "username").toLowerCase();
             String encryptedPassword = JsonUtils.getString(credentials, "password");
             String password = wsService.decrypt(session, encryptedPassword);
+            boolean changePassword = false;
+            if (credentials.containsKey("changePassword")) {
+                changePassword = JsonUtils.getBoolean(credentials, "changePassword");
+            }
 
             JsonObject response = db.getUserDetails(username);
             if (response == null) {
@@ -123,20 +126,22 @@ public class AuthenticationController {
 
             db.updateLastLoginDateTime(username);
             wsService.setUsername(session, username);
-            wsService.setName(session, response.getString("name"));
+            wsService.setFirstName(session, response.getString("first_name"));
+            wsService.setLastName(session, response.getString("last_name"));
             wsService.setEmail(session, response.getString("email"));
             String workspace = JsonUtils.getString(response, "workspace");
             if (workspace != null && workspace.length() > 0) {
                 if (!gitService.doesWorkspaceAlreadyExist(workspace)) {
-                   // Create the workspace
+                   // Create the workspace, checkout develop branch and create branch with <username>_changes
                    wsService.sendErrorToClient(session, topic, "Creating Workspace", "Please wait while the workspace is created.", INFO_SEVERITY);
-                   gitService.createNewWorkspace(workspace, "master");
+                   gitService.createNewWorkspace(workspace, "develop");
+                   gitService.createNewBranch(workspace, "develop", username + "_changes");
                 }
                 wsService.setWorkspace(session, workspace);
             }
             wsService.setPermissions(session, response.getString("permissions"));
             
-            response = removePassword(response);
+            response = removePassword(response, changePassword);
             response = JsonUtils.add(response, "sessionId", session.getId());
             
             String content = response.toString();
@@ -198,7 +203,7 @@ public class AuthenticationController {
                 return;
             }
 
-            response = removePassword(response); // Remove the DB hashed password
+            response = removePassword(response, false); // Remove the DB hashed password
             response = JsonUtils.add(response, "sessionId", session.getId());
 
             wsService.sendMessageToClient(session, "response", topic, response.toString());
@@ -266,7 +271,7 @@ public class AuthenticationController {
             String newPwdHash = pwdService.hashPassword(username, newPassword);
 
             db.updateUserDetails(username, newPwdHash);
-            response = removePassword(response);
+            response = removePassword(response, false);
 
             response = JsonUtils.add(response, "sessionId", session.getId());
 
@@ -313,11 +318,12 @@ public class AuthenticationController {
      * Removes the password. JsonObject is immutable and throws an exception if an attempt is made to do
      * a origin.remove("password"), so the object has to be copied to a new object minus the password.
      * 
-     * Also forces the user to change their password if the password in the DB is stored as clear text.
+     * Also forces the user to change their password if changePassword is true or the password in the DB 
+     * is stored as clear text.
      * 
      */
-    private static JsonObject removePassword(JsonObject origin){
-        boolean forcePwdChange = (origin.getString("password").length() < 30);
+    private static JsonObject removePassword(JsonObject origin, boolean changePassword){
+        boolean forcePwdChange = changePassword || (origin.getString("password").length() < 30);
         JsonObjectBuilder builder = Json.createObjectBuilder();
         for (Map.Entry<String,JsonValue> entry : origin.entrySet()){
             String key = entry.getKey();

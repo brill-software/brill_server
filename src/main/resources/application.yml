@@ -28,10 +28,11 @@ passwords.pepper: ${BRILL_LOCAL_PWDS_PEPPER}
 passwords.allowClearText: true
 permissions.default: db_write,chatbot
 log.sessions.to.db: false
+log.ip.session.to.geolocation: false
 chatbot:
    api.key: ${BRILL_LOCAL_CHATBOT_API_KEY}
    api.url: https://api.openai.com/v1/chat/completions
-   model: gpt-3.5-turbo
+   model: gpt-4
    timeout: 120
 logging:
     level:
@@ -69,12 +70,14 @@ passwords.pepper: ${BRILL_PROD_PWDS_PEPPER}
 passwords.allowClearText: true
 permissions.default: db_write,chatbot
 log.sessions.to.db: true
+log.ip.session.to.geolocation: true
 chatbot:
-   api.key: ${BRILL_PROD_CHATBOT_API_KEY}
+   api.key: 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
+   # api_key: ${BRILL_PROD_CHATBOT_API_KEY}
    api.url: https://api.openai.com/v1/chat/completions
-   model: gpt-3.5-turbo
+   model: gpt-4
    timeout: 120
 logging:
     level:
         web: INFO
-        brill: INFO
+        brill: TRACE

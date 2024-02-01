@@ -61,7 +61,7 @@ CREATE TABLE `brill_cms_permission` (
 
 LOCK TABLES `brill_cms_permission` WRITE;
 /*!40000 ALTER TABLE `brill_cms_permission` DISABLE KEYS */;
-INSERT INTO `brill_cms_permission` VALUES (1,'file_read'),(2,'file_write'),(3,'git_read'),(4,'git_write'),(5,'cms_user'),(6,'change_workspace'),(7,'cms_admin'),(8,'db_write'),(9,'chatbot');
+INSERT INTO `brill_cms_permission` VALUES (1,'file_read'),(2,'file_write'),(3,'git_read'),(4,'git_write'),(5,'cms_user'),(6,'cms_developer'),(7,'cms_admin'),(8,'db_write'),(9,'chatbot');
 /*!40000 ALTER TABLE `brill_cms_permission` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -75,7 +75,8 @@ DROP TABLE IF EXISTS `brill_cms_user`;
 CREATE TABLE `brill_cms_user` (
   `user_id` int NOT NULL AUTO_INCREMENT,
   `username` varchar(45) NOT NULL,
-  `name` varchar(45) NOT NULL,
+  `first_name` varchar(45) NOT NULL,
+  `last_name` varchar(45) NOT NULL,
   `email` varchar(45) NOT NULL,
   `workspace` varchar(45) DEFAULT NULL,
   `password` varchar(512) DEFAULT NULL,
@@ -95,7 +96,7 @@ CREATE TABLE `brill_cms_user` (
 
 LOCK TABLES `brill_cms_user` WRITE;
 /*!40000 ALTER TABLE `brill_cms_user` DISABLE KEYS */;
-INSERT INTO `brill_cms_user` VALUES (1,'admin','Administrator','admin@brill.software',NULL,'Development','file_read,file_write,git_read,git_write,cms_user,change_workspace,cms_admin,db_write,chatbot',NULL,'N',NULL,'N');
+INSERT INTO `brill_cms_user` VALUES (1,'admin','Admin','User','admin@brill.software',NULL,'Development','file_read,file_write,git_read,git_write,cms_user,change_workspace,cms_admin,db_write,chatbot',NULL,'N',NULL,'N');
 /*!40000 ALTER TABLE `brill_cms_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -127,6 +128,27 @@ INSERT INTO `employee` VALUES (1,'Chris','Bulcock','Sports'),(2,'Albert','Willia
 UNLOCK TABLES;
 
 --
+-- Table structure for table `ip_address`
+--
+
+DROP TABLE IF EXISTS `ip_address`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `session_log` (
+  `session_log_id` int NOT NULL AUTO_INCREMENT,
+  `session_id` varchar(45) NOT NULL,
+  `start_date_time` datetime DEFAULT NULL,
+  `end_date_time` datetime DEFAULT NULL,
+  `user_agent` varchar(512) DEFAULT NULL,
+  `ip_address_id` int DEFAULT NULL,
+  PRIMARY KEY (`session_log_id`,`session_id`),
+  UNIQUE KEY `session_id_UNIQUE` (`session_id`),
+  UNIQUE KEY `session_log_id_UNIQUE` (`session_log_id`),
+  KEY `ip_address_id_idx` (`ip_address_id`),
+  CONSTRAINT `ip_address_id` FOREIGN KEY (`ip_address_id`) REFERENCES `ip_address` (`ip_address_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=96 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+--
 -- Table structure for table `session_log`
 --
 
@@ -139,11 +161,21 @@ CREATE TABLE `session_log` (
   `start_date_time` datetime DEFAULT NULL,
   `end_date_time` datetime DEFAULT NULL,
   `user_agent` varchar(512) DEFAULT NULL,
-  `referrer` varchar(1024) DEFAULT NULL,
   `ip_address` varchar(45) DEFAULT NULL,
+  `country` varchar(45) DEFAULT NULL,
+  `countryCode` varchar(45) DEFAULT NULL,
+  `region` varchar(45) DEFAULT NULL,
+  `regionName` varchar(45) DEFAULT NULL,
+  `city` varchar(45) DEFAULT NULL,
+  `lat` decimal(8,5) DEFAULT NULL,
+  `lon` decimal(8,5) DEFAULT NULL,
+  `isp` varchar(100) DEFAULT NULL,
+  `org` varchar(100) DEFAULT NULL,
   `notes` varchar(1024) DEFAULT NULL,
-  PRIMARY KEY (`session_log_id`,`session_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  PRIMARY KEY (`session_log_id`,`session_id`),
+  UNIQUE KEY `session_id_UNIQUE` (`session_id`),
+  UNIQUE KEY `session_log_id_UNIQUE` (`session_log_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 

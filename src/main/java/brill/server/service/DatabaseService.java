@@ -19,9 +19,11 @@ import java.time.LocalDateTime;
 @Service
 public class DatabaseService {
 
-    @Autowired
-    @Qualifier("database")
     Database database;
+
+    public DatabaseService(@Autowired @Qualifier("database") Database database) {
+        this.database = database;
+    }
 
     public String query(String query) {
         CachedConnection conn = null;
