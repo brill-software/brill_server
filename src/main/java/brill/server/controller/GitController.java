@@ -872,7 +872,7 @@ public class GitController {
     }
 
     /**
-     * Renames or moves a file. The content specifies the destination location.
+     * Renames or moves a file or directory. The content specifies the destination location.
      * 
      * Example
      * {"event": "publish", "topic": "git:mv:/brill_cms/test.txt", content: "brill_cms/test2.txt"}
@@ -887,11 +887,6 @@ public class GitController {
         String toPath = "";
         try {
             topic = message.getString("topic");
-            int index = topic.lastIndexOf('.');
-            if (index == -1 || index == topic.length() - 1) {
-                throw new Exception("The topic must end with a file extension.");
-            }
-
             fromPath = topic.replace("git:mv:", ""); 
             toPath = "/" + message.getString("content");
 
@@ -905,7 +900,7 @@ public class GitController {
 
         } catch (Exception e) {
             wsService.sendErrorToClient(session, topic, "Rename/Move failed.", 
-                format("Unable to move %s to %s", fromPath, toPath));
+                format("Unable to move %s to %s %s", fromPath, toPath, e.getMessage()));
             log.error(format("Unable to move %s to %s", fromPath, toPath));
         }
     }
