@@ -149,6 +149,21 @@ CREATE TABLE `session_log` (
   CONSTRAINT `ip_address_id` FOREIGN KEY (`ip_address_id`) REFERENCES `ip_address` (`ip_address_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=96 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 
+DROP TABLE IF EXISTS `user_agent`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_agent` (
+  `user_agent_id` int NOT NULL AUTO_INCREMENT,
+  `user_agent` varchar(512) NOT NULL,
+  `os` varchar(45) DEFAULT NULL,
+  `browser` varchar(45) DEFAULT NULL,
+  `browser_version` varchar(45) DEFAULT NULL,
+  `mobile` varchar(1) DEFAULT NULL,
+  PRIMARY KEY (`user_agent_id`),
+  UNIQUE KEY `user_agent_id_UNIQUE` (`user_agent_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+
 --
 -- Table structure for table `session_log`
 --
