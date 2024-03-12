@@ -44,6 +44,11 @@ public class GitService {
      * @param branch
      * @throws GitServiceException
      */
+    public void createNewWorkspace(String repository, String newWorkspace, String branch) throws GitServiceException {
+        gitRepo.deleteLocalRepo(newWorkspace);
+        gitRepo.cloneRemoteRepository(repository, newWorkspace, branch);
+    }
+
     public void createNewWorkspace(String newWorkspace, String branch) throws GitServiceException {
         gitRepo.deleteLocalRepo(newWorkspace);
         gitRepo.cloneRemoteRepository(newWorkspace, branch);
