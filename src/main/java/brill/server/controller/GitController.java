@@ -525,16 +525,15 @@ public class GitController {
             String commitBranch = gitService.getCurrentBranch(wsService.getWorkspace(session));
 
             if (commitBranch.equals("master") || commitBranch.equals("develop")) {
-                wsService.sendErrorToClient(session, topic, "Protected Branch", 
-                    format("Please make changes on your own branch first and then merge them into the <b>%s</b> branch.", commitBranch), ERROR_SEVERITY);
-                return;
+                wsService.sendErrorToClient(session, topic, "Branch Warning", 
+                    format("You are making changes on the <b>%s</b> branch.", commitBranch), WARNING_SEVERITY);
+                // Allow user to continue as they might be resolving merge conflicts.
+            } else {
+                wsService.sendErrorToClient(session, topic, "Updating", "Please wait while the respository is updated...", INFO_SEVERITY);
             }
 
             String commitMsg = JsonUtils.getString(message, "content");
-            wsService.sendErrorToClient(session, topic, "Updating", "Please wait while the respository is updated...", INFO_SEVERITY);
             gitService.commitStagedFiles(wsService.getWorkspace(session), commitMsg, wsService.getName(session), wsService.getEmail(session));
-
-           
 
             // Publish a list of commits to any sessions that has subscribed on the same branch as the commit.
             List<Subscriber> subscribers = wsService.getSubscribers("git:commits:/");
