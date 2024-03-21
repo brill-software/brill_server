@@ -283,7 +283,7 @@ public class WebSocketService {
         String lastName = "";
         Map<String, Object> map = session.getAttributes();
         if (map.containsKey(LAST_NAME)) {
-            lastName = (String) map.get(FIRST_NAME);
+            lastName = (String) map.get(LAST_NAME);
         }
         return lastName;
     }
@@ -293,7 +293,7 @@ public class WebSocketService {
     }
 
     public void setLastName(WebSocketSession session, String lastName) {
-        session.getAttributes().put(FIRST_NAME, lastName);
+        session.getAttributes().put(LAST_NAME, lastName);
     }
 
     public String getEmail(WebSocketSession session) {

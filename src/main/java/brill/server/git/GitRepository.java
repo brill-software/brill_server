@@ -1105,24 +1105,6 @@ public class GitRepository {
                 }
             }
 
-            if (pull) { // Push
-                // Fix - handle case where the remote is something other than 'origin'
-                ObjectId remoteObjId = repo.resolve(remoteTrackingBranch);
-                Iterable<RevCommit> pullLog = git.log().add(repo.resolve(branch)).not(remoteObjId).call();
-                // String remoteBranch = remoteTrackingBranch.replace("refs/", "");
-                for (RevCommit commit : pullLog) {
-                    JsonObjectBuilder objBuilder = Json.createObjectBuilder();
-                    objBuilder.add("commit", commit.getName().substring(0,7));
-                    objBuilder.add("awaiting", "Push to repository");
-                            objBuilder.add("branch", branch);
-                            objBuilder.add("message", commit.getFullMessage());
-                            objBuilder.add("author", commit.getAuthorIdent().getName());
-                            objBuilder.add("date", dateFormat.format(commit.getAuthorIdent().getWhen()));
-                            arrayBuilder.add(objBuilder.build());
-                            rowCount++;
-                }
-            }
-
             JsonObject result = Json.createObjectBuilder().add("data", arrayBuilder.build())
                                                             .add("offset", 0)
                                                             .add("row_count", rowCount)
