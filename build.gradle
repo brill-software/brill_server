@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.brill.server'
-version = '1.0.1'
+version = '1.0.2'
 
 // The versions of Java currently supported are 11 to 17.
 // Note that the Gradle for Java VS Code plug-in is hardcoded to use 11.

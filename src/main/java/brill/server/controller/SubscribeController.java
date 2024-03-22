@@ -91,7 +91,7 @@ public class SubscribeController {
         } catch (JsonParsingException e) {      
             if (content.contains("<<<<<<<") && content.contains("=======") && content.contains(">>>>>>>")) {
                 log.error(format("Unable to parse JSON as it contains Git conflict markup. Topic = %s", topic));
-                String msgContent = "{\"title\": \"Source Control Conflicts.\", \"detail\": \"Please close the tab and re-open with the JSON editor and do a manual merge. Add the file and do a commit.\", " +
+                String msgContent = "{\"title\": \"Source Control Conflicts.\", \"detail\": \"Please close the tab and re-open with the JSON editor and do a manual merge. <b>Stage the file</b> and do a commit to complete the merge.\", " +
                                     "\"severity\": \"warning\"}";
                 wsService.sendMessageToClient(session, "error", topic, msgContent);
                 return;

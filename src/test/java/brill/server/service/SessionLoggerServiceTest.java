@@ -35,27 +35,29 @@ public class SessionLoggerServiceTest {
         final Logger logger = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         logger.setLevel(LOG_LEVEL);
 
-        // String driver = "com.mysql.cj.jdbc.Driver";
-        // String url = "jdbc:mysql://localhost:3306/brill_local_db";
-        // String username = System.getenv("BRILL_LOCAL_DATABASE_USERNAME");
-        // String password = System.getenv("BRILL_LOCAL_DATABASE_PWD");
         String driver = "com.mysql.cj.jdbc.Driver";
-        String url = "jdbc:mysql://localhost:3306/brill_prod_db";
-        String username = "chris";
-        String password = "Mysql1234";
+        String url = "jdbc:mysql://localhost:3306/brill_local_db";
+        String username = System.getenv("BRILL_LOCAL_DATABASE_USERNAME");
+        String password = System.getenv("BRILL_LOCAL_DATABASE_PWD");
+        // String driver = "com.mysql.cj.jdbc.Driver";
+        // String url = "jdbc:mysql://localhost:3306/brill_prod_db";
+        // String username = "chris";
+        // String password = "Mysql1234";
         db = new Database(driver, url, username, password);
         dbService = new DatabaseService(db);
         locationService = new IPGeolocationService(true);
         service = new SessionLoggerService(true, dbService, locationService);
     }
 
+    @Disabled
     @Test
     public void logTestRecord() throws Exception {
         System.out.println("Running Session Logger test");
 
         String sessionId = "test_id-" + randomId();
         // service.logNewSession(sessionId, "User Agent Test Header", "66.108.1.32");
-        service.logNewSession(sessionId, "User Agent Test Header","188.141.52.136");
+        service.logNewSession(sessionId, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "188.141.52.136");
         
         // Check row is in DB.
         JsonArray result = dbService.query("select * from session_log where session_id = '" + sessionId + "'", null);
@@ -142,15 +144,15 @@ public class SessionLoggerServiceTest {
         System.out.println("Finished");
     }
 
-    //@Disabled
-    // @Test
-    // public void addMissingIPGeoData() throws Exception{
-    //     System.out.println("Running add missing IP geolocation data");
+    @Disabled
+    @Test
+    public void addMissingUserAgentData() throws Exception{
+        System.out.println("Running add missing user agent ID");
 
-    //     service.addMissingIPGeoData();
+        service.addMissingUserAgentId();
         
-    //     System.out.println("Finished.");
-    // }
+        System.out.println("Finished.");
+    }
 
     private String randomId() {
         String characters = "abcdefghijklmnopqrstuvwxyz0123456789";

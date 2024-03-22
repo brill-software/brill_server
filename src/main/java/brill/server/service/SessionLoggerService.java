@@ -3,6 +3,9 @@ package brill.server.service;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -45,8 +48,8 @@ public class SessionLoggerService {
     }
 
     public void logNewSession(String sessionId, String userAgent, String remoteIpAddr) throws AutomateIPException {
-        final String sqlInsert = "insert session_log (session_id, start_date_time, end_date_time, user_agent, ip_address_id) values ( "
-            + ":sessionId, :startDateTime, :endDateTime, :userAgent, :ipAddressId)";
+        final String sqlInsert = "insert session_log (session_id, start_date_time, end_date_time, user_agent_id, ip_address_id) values ( "
+            + ":sessionId, :startDateTime, :endDateTime, :userAgentId, :ipAddressId)";
 
         // Remove an leading slash and any : parts.
         String ipAddress = remoteIpAddr.replace("/", "");
@@ -55,12 +58,13 @@ public class SessionLoggerService {
         }
        
         try {
+            int userAgentId = getUserAgentId(userAgent);
             int ipAddressId = getIpAddressId(ipAddress, false);
 
             JsonObject jsonParams = Json.createObjectBuilder().add("sessionId", sessionId)
                     .add("startDateTime", LocalDateTime.now().toString())
                     .add("endDateTime", JsonValue.NULL)
-                    .add("userAgent", userAgent)
+                    .add("userAgentId", userAgentId)
                     .add("ipAddressId", ipAddressId)
                     .build();
 
@@ -129,6 +133,95 @@ public class SessionLoggerService {
         return ipAddrResult2.getJsonObject(0).getInt("ip_address_id");
     }
 
+    private int getUserAgentId(String userAgent) throws SQLException {
+        final String userAgentSql = "select user_agent_id from user_agent where user_agent = :userAgent";
+        final String insertSql = "insert user_agent (user_agent, os, browser, browser_version, mobile) values ( "
+                + ":userAgent, :os, :browser, :browserVersion, :mobile)";
+
+        if (userAgent.length() > 512) {
+            userAgent = userAgent.substring(0, 512);
+        }
+
+        // See if ip_address table already contains the IP address.
+        JsonObject jsonParams = Json.createObjectBuilder().add("userAgent", userAgent).build();
+        JsonArray result = db.queryUsingNamedParameters(userAgentSql, jsonParams);
+
+        if (result.size() == 1) {
+            // IP Address already in the ip_address table.
+            return result.getJsonObject(0).getInt("user_agent_id");
+        }
+
+        Map<String, String> browserInfo = findBrowserInfo(userAgent);
+
+        JsonObject params = Json.createObjectBuilder()
+            .add("userAgent", userAgent)
+            .add("os", browserInfo.get("os"))
+            .add("browser", browserInfo.get("browser"))
+            .add("browserVersion", browserInfo.get("browserVersion"))
+            .add("mobile", browserInfo.get("mobile"))
+            .build();
+        db.executeNamedParametersUpdate(insertSql, params);
+
+        JsonArray result2 = db.queryUsingNamedParameters(userAgentSql, jsonParams);
+        if (result2.size() != 1) {
+            throw new SQLException("Unable to get user_agent_id");
+        }
+        
+        // Return the id of the just inserted row.
+        return result2.getJsonObject(0).getInt("user_agent_id");
+    }
+
+    private Map<String, String> findBrowserInfo(String userAgentString) {
+        Map<String, String> browserInfo = new TreeMap<String, String>();
+        browserInfo.put("os","Unknown");
+        browserInfo.put("browser", "Unkown");
+        browserInfo.put("browserVersion","Unknown");
+        browserInfo.put("mobile", "");
+
+        // ChatGPT generated code.
+        String osPattern = ".*(Windows|Macintosh|Android|iOS|Linux).*";
+        String browserPattern = ".*(Chrome|Firefox|Safari|Opera|MSIE|Trident|LinkedinApp|Instagram).*";
+        String versionPattern = "(Chrome|Firefox|Safari|Opera|MSIE|rv)[\\/\\s]([\\d.]+)";
+
+        Pattern os = Pattern.compile(osPattern, Pattern.CASE_INSENSITIVE);
+        Pattern browser = Pattern.compile(browserPattern, Pattern.CASE_INSENSITIVE);
+        Pattern version = Pattern.compile(versionPattern, Pattern.CASE_INSENSITIVE);
+
+        if (userAgentString.contains("Chrome") && userAgentString.contains("Safari")) {
+            userAgentString = userAgentString.replace("Safari", "");
+            if (userAgentString.contains("Opera")) {
+                userAgentString = userAgentString.replace("Chrome", "");
+            }
+        }
+        if (userAgentString.contains("Opera") && userAgentString.contains("Chrome")) {
+            userAgentString = userAgentString.replace("Chrome", "");
+        }
+        userAgentString = userAgentString.replace("iPhone", "iOS").
+                            replace("Mozilla","Firefox");
+
+        Matcher osMatcher = os.matcher(userAgentString);
+        Matcher browserMatcher = browser.matcher(userAgentString);
+        Matcher versionMatcher = version.matcher(userAgentString);
+
+        if (osMatcher.find()) {
+            browserInfo.put("os", osMatcher.group(1));
+        }
+
+        if (browserMatcher.find()) {
+            browserInfo.put("browser", browserMatcher.group(1));
+        }
+
+        if (versionMatcher.find()) {
+            browserInfo.put("browserVersion", versionMatcher.group(2));
+        }
+
+        // Check for mobile device
+        boolean isMobile = userAgentString.matches(".*(Mobile|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini).*");
+        browserInfo.put("mobile", isMobile ? "Y" : "N");
+
+        return browserInfo;
+    }
+
     public void logEndSessionToDb(String sessionId) {
         if (!serviceEnabled) {
             return;
@@ -145,40 +238,26 @@ public class SessionLoggerService {
         }
     }
 
-    // /**
-    //  * Goes through the session_log table and adds
-    //  * 
-    //  */
-    // public void addMissingIPAddressId() {
-    //     final String selectSql = "select session_log_id, ip_address from session_log where ip_address_id IS NULL limit 1000";
-    //     final String updateIdSql2 = "update session_log set ip_address_id = :ipAddressId where session_log_id = :sessionLogId";
-    //     try {
-    //         JsonArray result = db.query(selectSql, null);
-    //         System.out.println("Rows = " + result.size());
+    public void addMissingUserAgentId() {
+        final String selectSql = "select session_log_id, user_agent from session_log where user_agent_id IS NULL limit 4000";
+        final String updateIdSql2 = "update session_log set user_agent_id = :userAgentId where session_log_id = :sessionLogId";
+        try {
+            JsonArray result = db.query(selectSql, null);
+            System.out.println("Rows = " + result.size());
 
-    //         for (int i = 0; i < result.size(); i++) {
-                
-    //             String sessionLogId = result.getJsonObject(i).getJsonNumber("session_log_id").numberValue().toString();
-    //             String ipAddress = result.getJsonObject(i).getString("ip_address").replace("/", "");
-    //             if (ipAddress.contains(":")) {
-    //                 ipAddress = ipAddress.substring(0, ipAddress.indexOf(":"));
-    //             }
-
-    //             int ipAddressId;
-    //             try {
-    //                 ipAddressId = getIpAddressId(ipAddress, true);
-    //             } catch (IPGeoServiceException e) {
-    //                 log.error(format("Unable to get geolocation details for IP address %s. Reason: %s", ipAddress, e.getMessage()));
-    //                 continue;
-    //             }
+            for (int i = 0; i < result.size(); i++) {
+                String sessionLogId = result.getJsonObject(i).getJsonNumber("session_log_id").numberValue().toString();
+                String userAgent = result.getJsonObject(i).getString("user_agent");
+                int userAgentId = getUserAgentId(userAgent);
               
-    //             // Update the ip_address_id in the session_log row.
-    //             JsonObject sessionLogIdParam = Json.createObjectBuilder().add("sessionLogId", sessionLogId).add("ipAddressId", ipAddressId).build();
-    //             db.executeNamedParametersUpdate(updateIdSql2, sessionLogIdParam);
-    //         }
-    //     } catch (SQLException e) {
-    //         log.debug("Uanble to add missing IP location data: " + e.getMessage());
-    //     }
+                // Update the ip_address_id in the session_log row.
+                JsonObject sessionLogIdParam = Json.createObjectBuilder().add("sessionLogId", sessionLogId).add("userAgentId", userAgentId).build();
+                db.executeNamedParametersUpdate(updateIdSql2, sessionLogIdParam);
+            }
+        } catch (SQLException e) {
+            log.debug("Uanble to add missing IP location data: " + e.getMessage());
+        }
         
-    // }
+    }
+ 
 }

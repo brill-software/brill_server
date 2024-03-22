@@ -525,16 +525,15 @@ public class GitController {
             String commitBranch = gitService.getCurrentBranch(wsService.getWorkspace(session));
 
             if (commitBranch.equals("master") || commitBranch.equals("develop")) {
-                wsService.sendErrorToClient(session, topic, "Protected Branch", 
-                    format("Please make changes on your own branch first and then merge them into the <b>%s</b> branch.", commitBranch), ERROR_SEVERITY);
-                return;
+                wsService.sendErrorToClient(session, topic, "Branch Warning", 
+                    format("You are making changes on the <b>%s</b> branch.", commitBranch), WARNING_SEVERITY);
+                // Allow user to continue as they might be resolving merge conflicts.
+            } else {
+                wsService.sendErrorToClient(session, topic, "Updating", "Please wait while the respository is updated...", INFO_SEVERITY);
             }
 
             String commitMsg = JsonUtils.getString(message, "content");
-            wsService.sendErrorToClient(session, topic, "Updating", "Please wait while the respository is updated...", INFO_SEVERITY);
             gitService.commitStagedFiles(wsService.getWorkspace(session), commitMsg, wsService.getName(session), wsService.getEmail(session));
-
-           
 
             // Publish a list of commits to any sessions that has subscribed on the same branch as the commit.
             List<Subscriber> subscribers = wsService.getSubscribers("git:commits:/");
@@ -872,7 +871,7 @@ public class GitController {
     }
 
     /**
-     * Renames or moves a file. The content specifies the destination location.
+     * Renames or moves a file or directory. The content specifies the destination location.
      * 
      * Example
      * {"event": "publish", "topic": "git:mv:/brill_cms/test.txt", content: "brill_cms/test2.txt"}
@@ -887,11 +886,6 @@ public class GitController {
         String toPath = "";
         try {
             topic = message.getString("topic");
-            int index = topic.lastIndexOf('.');
-            if (index == -1 || index == topic.length() - 1) {
-                throw new Exception("The topic must end with a file extension.");
-            }
-
             fromPath = topic.replace("git:mv:", ""); 
             toPath = "/" + message.getString("content");
 
@@ -901,11 +895,17 @@ public class GitController {
                 return;
             }
 
+            if ((toPath.endsWith(".js") || toPath.endsWith(".sql")) && !wsService.hasPermission(session, "cms_developer")) {
+                wsService.sendErrorToClient(session, topic, "Security Violation.", "You need the <b>cms_developer</b> permission for that action.");
+                    log.error(format("User trying to do move without cms_develop permission. path contains '..' fromPath =  %s toPath = %s", fromPath, toPath));
+                    return;
+            }
+
             gitService.moveFile(wsService.getWorkspace(session), fromPath, toPath);
 
         } catch (Exception e) {
             wsService.sendErrorToClient(session, topic, "Rename/Move failed.", 
-                format("Unable to move %s to %s", fromPath, toPath));
+                format("Unable to move %s to %s %s", fromPath, toPath, e.getMessage()));
             log.error(format("Unable to move %s to %s", fromPath, toPath));
         }
     }

@@ -71,8 +71,8 @@ public class GitRepository {
 
     public static int MAX_ROWS_TO_RETURN = 1000;
 
-    private String remoteRepositoryUrl;
-    private String localRepoDir;
+    private String remoteRepositoryUrl; // Default repo URL.
+    private String localRepoDir; // Directory under which the workspaces are held.
 
     public GitRepository() {
         remoteRepositoryUrl = "";
@@ -89,15 +89,18 @@ public class GitRepository {
      *
      * @throws GitServiceException
      */
-    public void cloneRemoteRepository(String workspace, String branch) throws GitServiceException {
+    public void cloneRemoteRepository(String repository, String workspace, String branch) throws GitServiceException {
         Git git = null;
+        if (repository == null || repository.length() == 0) {
+            repository = this.remoteRepositoryUrl; // Use default repository
+        }
         try {
             File localPath = new File(format("%s/%s", localRepoDir, workspace));
 
-            log.info("Cloning from " + remoteRepositoryUrl + " to " + localPath);
+            log.info("Cloning from " + repository + " to " + localPath);
     
             SshdSessionFactory sshdSessionFactory = new SshdSessionFactory(); // Apache SSH Driver
-            git = Git.cloneRepository().setURI(remoteRepositoryUrl)
+            git = Git.cloneRepository().setURI(repository)
                     .setTransportConfigCallback(new TransportConfigCallback() {
                         @Override
                          public void configure(Transport transport) {
@@ -108,8 +111,8 @@ public class GitRepository {
                  }).setDirectory(localPath).setBranch(branch).call();
             log.info("Completed downloading repository to " + git.getRepository().getDirectory());
         } catch (InvalidRemoteException ire) {
-            log.error(format("Remote git respository %s not found.", remoteRepositoryUrl));
-            throw new GitServiceException(format("Remote git respository %s not found.", remoteRepositoryUrl), ire);
+            log.error(format("Remote git respository %s not found.", repository));
+            throw new GitServiceException(format("Remote git respository %s not found.", repository), ire);
         } catch (TransportException te) {
             if (te.getMessage().contains("invalid privatekey")) {
                 log.error(
@@ -118,15 +121,26 @@ public class GitRepository {
                         "Unable to read private key from ~/.ssh/id_key possible because the format is openssh", te);
             }
             throw new GitServiceException(
-                    "Transport exception while accessing remote git respository " + remoteRepositoryUrl, te);
+                    "Transport exception while accessing remote git respository " + repository, te);
         } catch (GitAPIException gae) {
             throw new GitServiceException(
-                    "Git API exception while accessing remote git respository " + remoteRepositoryUrl, gae);
+                    "Git API exception while accessing remote git respository " + repository, gae);
         } finally {
             if (git != null) {
                 git.close();
             }
         }
+    }
+
+    /**
+     * Clones a repository using the default repository.
+     * 
+     * @param workspace
+     * @param branch
+     * @throws GitServiceException
+     */
+    public void cloneRemoteRepository(String workspace, String branch) throws GitServiceException {
+        cloneRemoteRepository(remoteRepositoryUrl, workspace, branch);
     }
 
     /**
@@ -140,7 +154,7 @@ public class GitRepository {
         Git git = null;
         PullResult pullResult = null;
         try {
-            log.info(format("Pull for branch %s from %s", branch, remoteRepositoryUrl));
+            log.info(format("Pull for branch %s", branch));
             Path repoPath = Paths.get(format("%s/%s", localRepoDir, workspace));
             Repository repo = new FileRepositoryBuilder().setGitDir(repoPath.resolve(".git").toFile()).build();
             git = new Git(repo);
@@ -185,7 +199,7 @@ public class GitRepository {
         Git git = null;
         RebaseResult rebaseResult = null;
         try {
-            log.info(format("Rebase for branch %s from %s", branch, remoteRepositoryUrl));
+            log.info(format("Rebase for branch %s", branch));
             Path repoPath = Paths.get(format("%s/%s", localRepoDir, workspace));
             Repository repo = new FileRepositoryBuilder().setGitDir(repoPath.resolve(".git").toFile()).build();
             git = new Git(repo);
@@ -201,7 +215,7 @@ public class GitRepository {
         } catch (GitAPIException gae) {
             log.error(format("GitAPI Exception when attempting a git rebease from %s", localRepoDir), gae);    
             log.warn("The network connection to the git respository might be down. Continuing with a respository that could be out of date.");
-            throw new GitServiceException(format("Exception when attempting a git pull from %s", localRepoDir), gae);
+            throw new GitServiceException(format("Exception when attempting a git pull from %s<br/>%s", localRepoDir, gae.getMessage()), gae);
         } finally {
             if (git != null) {
                 git.close();
@@ -299,7 +313,7 @@ public class GitRepository {
 
         try {
             String content = new String ( Files.readAllBytes( Paths.get(format("%s/%s/.git/config", localRepoDir, workspace))));
-            if (content.contains("url = " + remoteRepositoryUrl)) {
+            if (content.contains("url = " + this.remoteRepositoryUrl)) {
                 return true;
             }
         } catch (IOException ex) {
@@ -1035,7 +1049,8 @@ public class GitRepository {
             git.fetch().call();
 
             String remoteTrackingBranch = new BranchConfig(repo.getConfig(), repo.getBranch()).getTrackingBranch();
-            String remote = remoteTrackingBranch.substring(5, remoteTrackingBranch.lastIndexOf("/") + 1); // e.g. remotes/origin/
+            // String remote = remoteTrackingBranch.substring(5, remoteTrackingBranch.lastIndexOf("/") + 1); // e.g. remotes/origin/
+            String remote = getRemote(remoteTrackingBranch);
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm");
             
@@ -1089,7 +1104,7 @@ public class GitRepository {
                             rowCount++;
                 }
             }
-           
+
             JsonObject result = Json.createObjectBuilder().add("data", arrayBuilder.build())
                                                             .add("offset", 0)
                                                             .add("row_count", rowCount)
@@ -1104,6 +1119,15 @@ public class GitRepository {
                 git.close();
             }
         }      
+    }
+
+    private String getRemote(String remoteTrackingBranch) {
+        String result = "remotes/origin/";
+        if (remoteTrackingBranch != null && remoteTrackingBranch.length() > 5 && 
+            remoteTrackingBranch.lastIndexOf("/") > 5) {
+                result =remoteTrackingBranch.substring(5, remoteTrackingBranch.lastIndexOf("/") + 1);
+        }
+        return result;   
     }
 
     /**
@@ -1453,6 +1477,7 @@ public class GitRepository {
             }
             
             git.push().call();
+           
         } catch (IOException | GitAPIException e) {
             if (!e.getMessage().contains("Nothing to push")) {
                 throw new GitServiceException(format("Unable to perform a commit on branch %s, message %s", branch, message), e);
