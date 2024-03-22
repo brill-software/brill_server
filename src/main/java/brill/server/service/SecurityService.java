@@ -30,7 +30,7 @@ public class SecurityService {
             log.warn(format("User %s requires permission %s to access topic %s", wsService.getUsername(session), permission, topic));
             // The message must contain the word "permission" for the client Router to re-direct users to the login page.
             throw new SecurityServiceException(format("Sorry but you don't have the <b>%s</b> permission, which is required for this action.<br/><br/>" +
-                "Please ask an Administrator to provide you with the permission or ask someone that has the permission to perform the action.", permission));
+                "Please ask an Administrator to provide you with the permission or ask someone that has the permission to perform the action for you.", permission));
         }
     }
 

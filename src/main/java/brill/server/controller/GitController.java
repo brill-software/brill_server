@@ -895,6 +895,12 @@ public class GitController {
                 return;
             }
 
+            if ((toPath.endsWith(".js") || toPath.endsWith(".sql")) && !wsService.hasPermission(session, "cms_developer")) {
+                wsService.sendErrorToClient(session, topic, "Security Violation.", "You need the <b>cms_developer</b> permission for that action.");
+                    log.error(format("User trying to do move without cms_develop permission. path contains '..' fromPath =  %s toPath = %s", fromPath, toPath));
+                    return;
+            }
+
             gitService.moveFile(wsService.getWorkspace(session), fromPath, toPath);
 
         } catch (Exception e) {

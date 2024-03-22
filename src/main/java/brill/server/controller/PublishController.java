@@ -128,7 +128,7 @@ public class PublishController {
      * @param session Web Socket session.
      * @param message JSON Object containing the event, topic and content .js file base 64 encoded.
      */    
-    @Event(value = "publish", topicMatches = "file:/.*\\.js", permission="file_write") // JavaScript
+    @Event(value = "publish", topicMatches = "file:/.*\\.js", permission="cms_developer") // JavaScript
     public void publishJavaScript(@Session WebSocketSession session, @Message JsonObject message) {
         String topic = "";
         try {
@@ -169,7 +169,7 @@ public class PublishController {
      * @param session Web Socket session.
      * @param message JSON Object containing the event, topic and content .sql file base 64 encoded.
      */    
-    @Event(value = "publish", topicMatches = "file:/.*\\.sql", permission="file_write") // SQL
+    @Event(value = "publish", topicMatches = "file:/.*\\.sql", permission="cms_developer") // SQL
     public void publishSql(@Session WebSocketSession session, @Message JsonObject message) {
         String topic = "";
         try {
