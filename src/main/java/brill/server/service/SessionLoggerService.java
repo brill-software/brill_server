@@ -309,6 +309,8 @@ public class SessionLoggerService {
 
         } catch (SQLException e) { 
             log.error("Unble to log page access to DB table session_page_log: " + e.getMessage());
+        } catch (Exception e) { 
+            log.error("Exception while updating session_page_log: " + e.getMessage());
         }
     }
 }
