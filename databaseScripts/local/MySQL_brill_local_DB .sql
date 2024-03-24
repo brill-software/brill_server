@@ -177,22 +177,20 @@ CREATE TABLE `session_log` (
   `session_id` varchar(45) NOT NULL,
   `start_date_time` datetime DEFAULT NULL,
   `end_date_time` datetime DEFAULT NULL,
+  `session_length` int DEFAULT '0',
+  `visits` int DEFAULT '0',
+  `pages` int DEFAULT '0',
   `user_agent` varchar(512) DEFAULT NULL,
-  `ip_address` varchar(45) DEFAULT NULL,
-  `country` varchar(45) DEFAULT NULL,
-  `countryCode` varchar(45) DEFAULT NULL,
-  `region` varchar(45) DEFAULT NULL,
-  `regionName` varchar(45) DEFAULT NULL,
-  `city` varchar(45) DEFAULT NULL,
-  `lat` decimal(8,5) DEFAULT NULL,
-  `lon` decimal(8,5) DEFAULT NULL,
-  `isp` varchar(100) DEFAULT NULL,
-  `org` varchar(100) DEFAULT NULL,
-  `notes` varchar(1024) DEFAULT NULL,
-  PRIMARY KEY (`session_log_id`,`session_id`),
+  `ip_address_id` int NOT NULL,
+  `user_agent_id` int DEFAULT NULL,
+  PRIMARY KEY (`session_log_id`,`session_id`,`ip_address_id`),
   UNIQUE KEY `session_id_UNIQUE` (`session_id`),
-  UNIQUE KEY `session_log_id_UNIQUE` (`session_log_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+  UNIQUE KEY `session_log_id_UNIQUE` (`session_log_id`),
+  KEY `ip_address_id_idx` (`ip_address_id`),
+  KEY `user_agent_id_fk_idx` (`user_agent_id`),
+  CONSTRAINT `ip_address_id_fk` FOREIGN KEY (`ip_address_id`) REFERENCES `ip_address` (`ip_address_id`),
+  CONSTRAINT `user_agent_id_fk` FOREIGN KEY (`user_agent_id`) REFERENCES `user_agent` (`user_agent_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4295 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 

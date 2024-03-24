@@ -5,14 +5,11 @@ import java.io.StringReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import javax.json.Json;
 import javax.json.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.PongMessage;
@@ -21,8 +18,8 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import brill.server.exception.SecurityServiceException;
-import brill.server.service.DatabaseService;
 import brill.server.service.SecurityService;
+import brill.server.service.SessionLoggerService;
 import brill.server.service.WebSocketService;
 import brill.server.webSockets.annotations.*;
 import static java.lang.String.format;
@@ -41,9 +38,6 @@ import static brill.server.config.WebSocketConfig.WEB_SOCKET_SNED_TIMEOUT_MS;
 public class WebSocketManager extends TextWebSocketHandler {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(WebSocketManager.class);
 
-    @Value("${log.sessions.to.db:false}")
-    private Boolean logSessionsToDb;
-
     @Autowired
     private WebSocketSessionManager webSocketSessionManager;
 
@@ -54,7 +48,7 @@ public class WebSocketManager extends TextWebSocketHandler {
     private SecurityService securityService;
 
     @Autowired
-    private DatabaseService db;
+    private SessionLoggerService sessionLogger;
 
     // Injects a list of classes that have the @WebSocketController annotation
     @Autowired
@@ -136,9 +130,9 @@ public class WebSocketManager extends TextWebSocketHandler {
                 log.error("More than one @Event method matches Topic " + topic);
                 wsService.sendErrorToClient(session, topic, "Server Error.", "More than one server event method for topic.");
             }
-            if (logSessionsToDb && event.equals("subscribe") && topic.contains("/Pages/") && 
+            if (event.equals("subscribe") && topic.contains("/Pages/") && 
                     !topic.contains("/header.json") && !topic.contains("/footer.json")) {
-                logPageAccessToDb(session, topic);
+                sessionLogger.logPageAccessToDb(session.getId(), topic);
             }
         } catch (SecurityServiceException e) {
             wsService.sendErrorToClient(session, topic, "No Permission", e.getMessage());
@@ -196,19 +190,5 @@ public class WebSocketManager extends TextWebSocketHandler {
             paramNum++;
         }
         return params.toArray();
-    }
-
-    private void logPageAccessToDb(WebSocketSession session, String topic) {
-        try {
-            String sql = "insert session_page_log (session_id, date_time, page) values ( :sessionId, :dateTime, :page)";
-            String currentTime = LocalDateTime.now().toString();
-            String page = topic.substring(topic.indexOf(":") + 1);
-            JsonObject jsonParams = Json.createObjectBuilder().add("sessionId", session.getId())
-                .add("dateTime", currentTime)
-                .add("page", page).build();
-            db.executeNamedParametersUpdate(sql, jsonParams);
-        } catch (SQLException e) { 
-            log.warn("Unble to log page access to DB table session_page_log: " + e.getMessage());
-        }
     }
 }

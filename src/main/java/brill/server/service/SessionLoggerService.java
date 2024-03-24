@@ -48,8 +48,9 @@ public class SessionLoggerService {
     }
 
     public void logNewSession(String sessionId, String userAgent, String remoteIpAddr) throws AutomateIPException {
-        final String sqlInsert = "insert session_log (session_id, start_date_time, end_date_time, user_agent_id, ip_address_id) values ( "
-            + ":sessionId, :startDateTime, :endDateTime, :userAgentId, :ipAddressId)";
+        final String sqlInsert = "insert session_log (session_id, start_date_time, end_date_time, user_agent_id, ip_address_id, visits) values ( "
+             + ":sessionId, :startDateTime, :endDateTime, :userAgentId, :ipAddressId, " 
+             + "(select count(0) from session_log sl where sl.ip_address_id = :ipAddressId) + 1)";
 
         // Remove an leading slash and any : parts.
         String ipAddress = remoteIpAddr.replace("/", "");
@@ -71,7 +72,7 @@ public class SessionLoggerService {
             db.executeNamedParametersUpdate(sqlInsert, jsonParams);
 
         } catch (SQLException e) {
-            log.warn("SessionLogger SQL Exception: " + e.getMessage());
+            log.error("SessionLogger SQL Exception: " + e.getMessage());
         } catch (Exception e) {
             log.error("SessionLoger Exception: " + e.getMessage());
         }
@@ -117,8 +118,8 @@ public class SessionLoggerService {
             .add("region", location != null ? location.get("region") : "")
             .add("regionName", location != null ? location.get("regionName") : "")
             .add("city", location != null ? location.get("city") : "")
-            .add("lat", location != null ? location.get("lat") : "")
-            .add("lon", location != null ? location.get("lon") : "")
+            .add("lat", location != null ? location.get("lat") : "0.0")
+            .add("lon", location != null ? location.get("lon") : "0.0")
             .add("isp", location != null ? location.get("isp") : "")
             .add("org", location != null ? location.get("org") : "")
             .build();
@@ -227,14 +228,16 @@ public class SessionLoggerService {
             return;
         }
         try {
-            String sql = "update session_log set end_date_time = :endDateTime where session_id = :sessionId";
+            String sql = "update session_log set end_date_time = :endDateTime" +
+                ", session_length = (UNIX_TIMESTAMP(:endDateTime) - UNIX_TIMESTAMP(session_log.start_date_time))" +
+                " where session_id = :sessionId";
             String currentTime = LocalDateTime.now().toString();
             JsonObjectBuilder objBuilder = Json.createObjectBuilder();
             JsonObject jsonParams = objBuilder.add("sessionId", sessionId)
                     .add("endDateTime", currentTime).build();
             db.executeNamedParametersUpdate(sql, jsonParams);
         } catch (SQLException e) {
-            log.warn("Unble to log end session details to DB table session_page_log: " + e.getMessage());
+            log.error("Unble to log end session details to DB table session_log: " + e.getMessage());
         }
     }
 
@@ -259,5 +262,53 @@ public class SessionLoggerService {
         }
         
     }
- 
+
+    public void logPageAccessToDb(String sessionId, String topic) {
+        if (!serviceEnabled) {
+            return;
+        }
+
+        Thread apiThread = new Thread(
+                () -> {
+                    try {
+                        logPageAccess(sessionId, topic);
+                    } catch (Exception e) {
+                        log.error("Unexpected exception", e);
+                    }
+                });
+        apiThread.start();
+    }
+
+    public void logPageAccess(String sessionId, String topic) {
+        try {
+            // Add the page to the session_page_log table.
+            String sql = "insert session_page_log (session_id, date_time, page) values ( :sessionId, :dateTime, :page)";
+            String currentTime = LocalDateTime.now().toString();
+            String page = topic.substring(topic.indexOf(":") + 1);
+            JsonObject jsonParams = Json.createObjectBuilder().add("sessionId", sessionId)
+                .add("dateTime", currentTime)
+                .add("page", page).build();
+            db.executeNamedParametersUpdate(sql, jsonParams);
+
+            // Get the session start time and page count.
+            String sql1 = "select start_date_time, pages from session_log where session_id = :sessionId";
+            JsonObject jsonParam = Json.createObjectBuilder().add("sessionId", sessionId).build();
+            JsonObject queryResult = db.queryUsingNamedParameters(sql1, jsonParam).getJsonObject(0);
+            String startTime = queryResult.getString("start_date_time");
+            int pages = queryResult.getInt("pages") + 1;
+    
+            // Updtate session_length and pages in the session_log table.
+            String sql2 = "update session_log set session_length = ((UNIX_TIMESTAMP(:currentTime) - UNIX_TIMESTAMP(:startTime)))" +
+                ", pages = :pages where session_id = :sessionId";
+            JsonObject jsonParams2 = Json.createObjectBuilder()
+                .add("sessionId", sessionId)
+                .add("currentTime", currentTime)
+                .add("startTime", startTime)
+                .add("pages", pages).build();
+            db.executeNamedParametersUpdate(sql2, jsonParams2);
+
+        } catch (SQLException e) { 
+            log.error("Unble to log page access to DB table session_page_log: " + e.getMessage());
+        }
+    }
 }
