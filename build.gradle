@@ -1,18 +1,18 @@
 plugins {
-	id 'org.springframework.boot' version '2.7.18' 
+	id 'org.springframework.boot' version '3.2.4' 
 	id 'io.spring.dependency-management' version '1.1.2'
 	id 'java'
 }
 
 group = 'com.brill.server'
-version = '1.0.3'
+version = '1.1.0'
 
-// The versions of Java currently supported are 11 to 17.
-// Note that the Gradle for Java VS Code plug-in is hardcoded to use 11.
-// This prevents us from upgrading to Spring Boot 3.2.4
-// See https://github.com/redhat-developer/vscode-java/issues/3136
+// Brill Versions
+// 1.0.3 - Spring Boot 2.7.4
+// 1.1.0 - Spring Boot 3.2.4
+
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
 	targetCompatibility = JavaVersion.VERSION_17 
 }
 
@@ -26,6 +26,7 @@ configurations {
 	}
 }
 
+// Uncomment to run prod profile locally.
 // bootRun {
 //     systemProperty "spring.profiles.active", "prod"
 // }
@@ -40,6 +41,9 @@ dependencies {
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
+
+	// Fixes enum constant When.MAYBE build warning.
+    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
 
     // Eclipse JGit Library - used to access Git repository in GitRepository.java
 	implementation 'org.eclipse.jgit:org.eclipse.jgit:6.5.0.202303070854-r'
@@ -63,15 +67,12 @@ dependencies {
 	testImplementation("org.apache.logging.log4j:log4j-jul:2.11.1")
 
     // WebSockets
-    implementation("org.springframework:spring-websocket:5.2.8.RELEASE")
-	implementation("org.springframework:spring-messaging:5.2.8.RELEASE")
+    implementation("org.springframework:spring-websocket:6.1.5")
+	implementation("org.springframework:spring-messaging:6.1.5")
 
-	implementation("org.apache.logging.log4j:log4j-api:2.11.1")
-	implementation("org.apache.logging.log4j:log4j-core:2.11.1")
-
-	implementation("org.apache.logging.log4j:log4j-slf4j18-impl:2.11.1")
-	implementation("org.slf4j:slf4j-api:1.7.25")
-	implementation("org.slf4j:jul-to-slf4j:1.7.25")
+	implementation("org.slf4j:slf4j-api:2.0.12")
+	implementation("ch.qos.logback:logback-classic:1.5.3")
+	implementation("ch.qos.logback:logback-core:1.5.3")
 
 	implementation("commons-io:commons-io:2.6")
 	implementation("javax.json:javax.json-api:1.1.4")

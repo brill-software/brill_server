@@ -1,8 +1,8 @@
 // © 2021 Brill Software Limited - Brill Framework, distributed under the MIT License.
 package brill.server.config;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
