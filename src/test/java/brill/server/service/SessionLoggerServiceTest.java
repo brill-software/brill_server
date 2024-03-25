@@ -36,13 +36,17 @@ public class SessionLoggerServiceTest {
         logger.setLevel(LOG_LEVEL);
 
         String driver = "com.mysql.cj.jdbc.Driver";
+        
+        // LOCAL DB
         String url = "jdbc:mysql://localhost:3306/brill_local_db";
         String username = System.getenv("BRILL_LOCAL_DATABASE_USERNAME");
         String password = System.getenv("BRILL_LOCAL_DATABASE_PWD");
-        // String driver = "com.mysql.cj.jdbc.Driver";
+
+        // PRODUCTION DB
         // String url = "jdbc:mysql://localhost:3306/brill_prod_db";
         // String username = "chris";
         // String password = "Mysql1234";
+
         db = new Database(driver, url, username, password);
         dbService = new DatabaseService(db);
         locationService = new IPGeolocationService(true);
@@ -144,15 +148,37 @@ public class SessionLoggerServiceTest {
         System.out.println("Finished");
     }
 
-    @Disabled
-    @Test
-    public void addMissingUserAgentData() throws Exception{
-        System.out.println("Running add missing user agent ID");
+    // TO BE REMOVED - code for fixing db.
+    //
+    // @Disabled
+    // @Test
+    // public void addMissingUserAgentData() throws Exception{
+    //     System.out.println("Running add missing user agent ID");
 
-        service.addMissingUserAgentId();
+    //     service.addMissingUserAgentId();
         
-        System.out.println("Finished.");
-    }
+    //     System.out.println("Finished.");
+    // }
+
+    // @Disabled
+    // @Test
+    // public void addMissingSessionLength() throws Exception{
+    //     System.out.println("Running add missing session length");
+
+    //     service.addMissingSessionLength();
+        
+    //     System.out.println("Finished.");
+    // }
+
+    // @Disabled
+    // @Test
+    // public void addMissingVisitsAndPages() throws Exception{
+    //     System.out.println("Running add messing Visits and Pages");
+
+    //     service.addMissingVisitsAndPages();
+        
+    //     System.out.println("Finished.");
+    // }
 
     private String randomId() {
         String characters = "abcdefghijklmnopqrstuvwxyz0123456789";

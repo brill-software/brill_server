@@ -129,7 +129,6 @@ CREATE TABLE `session_log` (
   `session_length` int DEFAULT '0',
   `visits` int DEFAULT '0',
   `pages` int DEFAULT '0',
-  `user_agent` varchar(512) DEFAULT NULL,
   `ip_address_id` int NOT NULL,
   `user_agent_id` int DEFAULT NULL,
   PRIMARY KEY (`session_log_id`,`session_id`,`ip_address_id`),

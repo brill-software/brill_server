@@ -241,28 +241,6 @@ public class SessionLoggerService {
         }
     }
 
-    public void addMissingUserAgentId() {
-        final String selectSql = "select session_log_id, user_agent from session_log where user_agent_id IS NULL limit 4000";
-        final String updateIdSql2 = "update session_log set user_agent_id = :userAgentId where session_log_id = :sessionLogId";
-        try {
-            JsonArray result = db.query(selectSql, null);
-            System.out.println("Rows = " + result.size());
-
-            for (int i = 0; i < result.size(); i++) {
-                String sessionLogId = result.getJsonObject(i).getJsonNumber("session_log_id").numberValue().toString();
-                String userAgent = result.getJsonObject(i).getString("user_agent");
-                int userAgentId = getUserAgentId(userAgent);
-              
-                // Update the ip_address_id in the session_log row.
-                JsonObject sessionLogIdParam = Json.createObjectBuilder().add("sessionLogId", sessionLogId).add("userAgentId", userAgentId).build();
-                db.executeNamedParametersUpdate(updateIdSql2, sessionLogIdParam);
-            }
-        } catch (SQLException e) {
-            log.debug("Uanble to add missing IP location data: " + e.getMessage());
-        }
-        
-    }
-
     public void logPageAccessToDb(String sessionId, String topic) {
         if (!serviceEnabled) {
             return;
@@ -313,4 +291,82 @@ public class SessionLoggerService {
             log.error("Exception while updating session_page_log: " + e.getMessage());
         }
     }
+
+    // TO BE REMOVED - code for updrading DB with missing data.
+    //
+    // public void addMissingUserAgentId() {
+    //     final String selectSql = "select session_log_id, user_agent from session_log where user_agent_id IS NULL limit 4000";
+    //     final String updateIdSql2 = "update session_log set user_agent_id = :userAgentId where session_log_id = :sessionLogId";
+    //     try {
+    //         JsonArray result = db.query(selectSql, null);
+    //         System.out.println("Rows = " + result.size());
+
+    //         for (int i = 0; i < result.size(); i++) {
+    //             String sessionLogId = result.getJsonObject(i).getJsonNumber("session_log_id").numberValue().toString();
+    //             String userAgent = result.getJsonObject(i).getString("user_agent");
+    //             int userAgentId = getUserAgentId(userAgent);
+              
+    //             // Update the ip_address_id in the session_log row.
+    //             JsonObject sessionLogIdParam = Json.createObjectBuilder().add("sessionLogId", sessionLogId).add("userAgentId", userAgentId).build();
+    //             db.executeNamedParametersUpdate(updateIdSql2, sessionLogIdParam);
+    //         }
+    //     } catch (SQLException e) {
+    //         log.debug("Uanble to add missing IP location data: " + e.getMessage());
+    //     }
+        
+    // }
+
+    // public void addMissingSessionLength() {
+    //     final String selectSql = "select session_log_id, start_date_time, end_date_time from session_log where session_length is NULL or session_length = 0 limit 5000";
+    //     final String updateIdSql2 = "update session_log set session_length = ((UNIX_TIMESTAMP(:endTime) - UNIX_TIMESTAMP(:startTime))) where session_log_id = :sessionLogId";
+    //     try {
+    //         JsonArray result = db.query(selectSql, null);
+    //         System.out.println("Rows = " + result.size());
+
+    //         for (int i = 0; i < result.size(); i++) {
+    //             String sessionLogId = result.getJsonObject(i).getJsonNumber("session_log_id").numberValue().toString();
+    //             String startTime = result.getJsonObject(i).getString("start_date_time");
+    //             String endTime = JsonUtils.getString(result.getJsonObject(i), "end_date_time");
+
+    //             if (endTime == null) {
+    //                 endTime = startTime;
+    //             }
+              
+    //             // Update the ip_address_id in the session_log row.
+    //             JsonObject sessionLogIdParam = Json.createObjectBuilder()
+    //                 .add("sessionLogId", sessionLogId)
+    //                 .add("startTime", startTime)
+    //                 .add("endTime", endTime).build();
+
+    //             db.executeNamedParametersUpdate(updateIdSql2, sessionLogIdParam);
+    //         }
+    //     } catch (Exception e) {
+    //         log.debug("Uanble to add missing IP location data: " + e.getMessage());
+    //     } 
+    // }
+
+    // public void addMissingVisitsAndPages() {
+    //     final String selectSql = "select session_log_id, ip_address_id, session_id from session_log limit 5000";
+    //     final String updateIdSql2 = "update session_log set visits = (select count(0) from (select session_log_id from session_log sl where sl.ip_address_id = :ipAddressId) dt), " +
+    //             " pages = (select count(0) from session_page_log slp where :sessionId = slp.session_id) where session_log_id = :sessionLogId";
+    //     try {
+    //         JsonArray result = db.query(selectSql, null);
+    //         System.out.println("Rows = " + result.size());
+
+    //         for (int i = 0; i < result.size(); i++) {
+    //             String sessionLogId = result.getJsonObject(i).getJsonNumber("session_log_id").numberValue().toString();
+    //             int ipAddressId = result.getJsonObject(i).getInt("ip_address_id");
+    //             String sessionId = result.getJsonObject(i).getString("session_id");
+
+    //             JsonObject sessionLogIdParam = Json.createObjectBuilder()
+    //                 .add("sessionLogId", sessionLogId)
+    //                 .add("ipAddressId", ipAddressId)
+    //                 .add("sessionId", sessionId).build();
+
+    //             db.executeNamedParametersUpdate(updateIdSql2, sessionLogIdParam);
+    //         }
+    //     } catch (Exception e) {
+    //         log.debug("Uanble to add missing IP location data: " + e.getMessage());
+    //     } 
+    // }
 }
