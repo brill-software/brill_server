@@ -155,7 +155,7 @@ CREATE TABLE `session_page_log` (
   PRIMARY KEY (`session_page_log_id`,`session_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-DROP TABLE IF EXISTS `session_log_view`;
+DROP VIEW IF EXISTS `session_log_view`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE VIEW `session_log_view` AS
@@ -163,22 +163,13 @@ CREATE VIEW `session_log_view` AS
         `session_log`.`session_log_id` AS `session_log_id`,
         `session_log`.`session_id` AS `session_id`,
         `session_log`.`start_date_time` AS `start_date_time`,
-        (UNIX_TIMESTAMP(`session_log`.`end_date_time`) - UNIX_TIMESTAMP(`session_log`.`start_date_time`)) AS `session_length`,
+        `session_log`.`end_date_time` AS `end_date_time`,
+        `session_log`.`session_length` AS `session_length`,
         `session_log`.`ip_address_id` AS `ip_address_id`,
         `ip_address`.`country` AS `country`,
         `ip_address`.`city` AS `city`,
-        (SELECT 
-                COUNT(0)
-            FROM
-                `session_log` `r`
-            WHERE
-                (`r`.`ip_address_id` = `session_log`.`ip_address_id`)) AS `visits`,
-        (SELECT 
-                COUNT(0)
-            FROM
-                `session_page_log` `pl`
-            WHERE
-                (`pl`.`session_id` = `session_log`.`session_id`)) AS `pages`,
+        `session_log`.`visits` AS `visits`,
+        `session_log`.`pages` AS `pages`,
         `ip_address`.`isp` AS `isp`,
         `ip_address`.`org` AS `org`
     FROM
