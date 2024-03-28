@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.brill.server'
-version = '1.1.1'
+version = '1.1.2'
 
 // Brill Versions
 // 1.0.3 - Spring Boot 2.7.4
