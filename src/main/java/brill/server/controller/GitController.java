@@ -31,8 +31,7 @@ public class GitController {
     }
 
     /**
-     * Sets the workspaces using request/response messaging. The user requires the cms_user 
-     * and the cms_developer permissions to be able to do this. 
+     * Sets the workspaces using request/response messaging. The user requires the cms_user permissions to be able to do this. 
      * 
      * @param session
      * @param message
@@ -718,7 +717,7 @@ public class GitController {
         try {
             topic = message.getString("topic");
             filePath = topic.substring("git:file:/".length());
-            String fileContent = gitService.getLastCommitedFile(wsService.getWorkspace(session), filePath);
+            String fileContent = gitService.getLastCommittedFile(wsService.getWorkspace(session), filePath);
             wsService.sendMessageToClient(session, "publish", topic, fileContent, true);
         } catch (Exception e) {
             wsService.sendErrorToClient(session, topic, "Issue with getting last committed version of " + filePath, e.getMessage() );

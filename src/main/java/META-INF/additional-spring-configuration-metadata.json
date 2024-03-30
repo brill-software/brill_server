@@ -60,6 +60,11 @@
     "description": "Skip doing a repo pull on startup if true."
   },
   {
+    "name": "media.library.shared.dir",
+    "type": "java.lang.String",
+    "description": "Media Library Shared Folder. This is a shared folder that's not stored in the repository."
+  },
+  {
     "name": "passwords.pepper",
     "type": "java.lang.String",
     "description": "The pepper string is added to passwords. Changing this value will invalidate all existing passwords that use the pepper."

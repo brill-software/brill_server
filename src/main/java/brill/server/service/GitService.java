@@ -15,6 +15,7 @@ import java.util.List;
 import javax.json.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import static java.lang.String.format;
 
@@ -25,6 +26,9 @@ import static java.lang.String.format;
 @Service
 public class GitService {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GitService.class);
+
+    @Value("${media.library.shared.dir:}")
+    String mediaLibrarySharedDir;
 
     @Autowired
     @Qualifier("gitAppsRepo")
@@ -133,7 +137,16 @@ public class GitService {
     }
 
     public void switchBranch(String workspace, String newBranch) throws GitServiceException {
-        gitRepo.switchBranch(workspace, newBranch);   
+        gitRepo.switchBranch(workspace, newBranch); 
+        
+        // Create the shared link in the Media Folder.
+        if (mediaLibrarySharedDir != null && mediaLibrarySharedDir.length() > 0) {
+            try {
+                gitRepo.createSymbolicLink(workspace, "MediaLibrary/shared", mediaLibrarySharedDir);
+            } catch (GitServiceException e) {
+                log.error("Unable to create shared link in media library folder: " + e.getMessage());
+            }    
+        }
     }
 
     public void mergeBranch(String workspace, String branch) throws GitServiceException {
@@ -145,7 +158,9 @@ public class GitService {
     }  
 
     public void checkoutBranch(String workspace, String branch) throws GitServiceException {
-        gitRepo.checkoutBranch(workspace, branch);   
+        gitRepo.checkoutBranch(workspace, branch);
+
+
     } 
 
     public JsonObject getCommitsForBranchOrFile(String workspace, String branch, String fileName) throws GitServiceException {
@@ -378,8 +393,8 @@ public class GitService {
         }
     }
 
-    public String getLastCommitedFile(String workspace, String filePath) throws GitServiceException {
-        return gitRepo.getLastCommitedFile(workspace, filePath);
+    public String getLastCommittedFile(String workspace, String filePath) throws GitServiceException {
+        return gitRepo.getLastCommittedFile(workspace, filePath);
     }
 
     private String getPath(String topic) throws GitServiceException {

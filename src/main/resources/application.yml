@@ -24,6 +24,7 @@ brill.apps:
    local.repo:
       dir: ../brill_workspace
       skip.pull: false
+media.library.shared.dir: ../shared_media_library
 passwords.pepper: ${BRILL_LOCAL_PWDS_PEPPER}
 passwords.allowClearText: true
 permissions.default: db_write,chatbot
@@ -66,6 +67,7 @@ brill.apps:
 #    repo: git@bitbucket.org:brill-software/brill_apps.git
     repo: git@bitbucket.org:brill-software/brill_apps_fork.git
     local.repo.dir: BrillAppsRepo  
+media.library.shared.dir: ~/shared_media_library
 passwords.pepper: ${BRILL_PROD_PWDS_PEPPER}
 passwords.allowClearText: true
 permissions.default: db_write,chatbot

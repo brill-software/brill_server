@@ -45,6 +45,7 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
+
 import java.util.Set;
 import static java.lang.String.format;
 
@@ -141,6 +142,50 @@ public class GitRepository {
      */
     public void cloneRemoteRepository(String workspace, String branch) throws GitServiceException {
         cloneRemoteRepository(remoteRepositoryUrl, workspace, branch);
+    }
+
+    /**
+     * Creates a symbolic link in the workspace. Used to created the shared link in the Media Library.
+     * 
+     * @param workspace
+     * @param branch
+     * @return
+     * @throws GitServiceException
+     */
+    public void createSymbolicLink(String workspace, String linkName, String directoryPath) throws GitServiceException {
+
+        Path linkPath = Paths.get(format("%s/%s/%s", localRepoDir, workspace, linkName));
+
+        if (!directoryPath.startsWith("/")) {
+            directoryPath = Paths.get("").toAbsolutePath().toString() + "/" + directoryPath;
+        }
+
+        Path targetPath = Paths.get(directoryPath).normalize();
+        
+        // Check if the target directory exists, if not, create it
+        if (!Files.exists(targetPath)) {
+            try {
+                Files.createDirectories(targetPath);
+            } catch (IOException e) {
+                throw new GitServiceException("Failed to create target directory: " + e.getMessage());
+            }
+        }
+
+        // Delete sysmbolic link if it already exists.
+        if (Files.isSymbolicLink(linkPath)) {
+            try {
+                Files.delete(linkPath);
+            } catch (IOException e) {
+                throw new GitServiceException("Failed to delete symbolic link: " + e.getMessage());
+            }
+        }
+
+        // Create symbolic link
+        try {
+            Files.createSymbolicLink(linkPath, targetPath);
+        } catch (IOException e) {
+            throw new GitServiceException("Failed to create symbolic link: " + e.getMessage());
+        }
     }
 
     /**
@@ -501,7 +546,7 @@ public class GitRepository {
         throw new GitServiceException(format("Failed to find file %s", fullPath));
     }
 
-    public String getLastCommitedFile(String branch, String path) throws GitServiceException {
+    public String getLastCommittedFile(String branch, String path) throws GitServiceException {
         ObjectReader reader = null;
         RevWalk walk = null;
         TreeWalk treewalk = null;
