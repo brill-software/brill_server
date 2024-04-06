@@ -154,6 +154,10 @@ public class GitRepository {
      */
     public void createSymbolicLink(String workspace, String linkName, String directoryPath) throws GitServiceException {
 
+        if (linkName == null || linkName.length() == 0 || directoryPath == null || directoryPath.length() == 0) {
+            return;
+        }
+
         Path linkPath = Paths.get(format("%s/%s/%s", localRepoDir, workspace, linkName));
 
         if (!directoryPath.startsWith("/")) {

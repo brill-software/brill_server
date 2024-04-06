@@ -130,6 +130,7 @@ public class AuthenticationController {
             wsService.setLastName(session, response.getString("last_name"));
             wsService.setEmail(session, response.getString("email"));
             String repository = JsonUtils.getString(response, "repository");
+            wsService.setRepository(session, repository);
             String workspace = JsonUtils.getString(response, "workspace");
             if (workspace != null && workspace.length() > 0) {
                 if (!gitService.doesWorkspaceAlreadyExist(workspace)) {

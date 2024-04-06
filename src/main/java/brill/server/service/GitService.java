@@ -51,11 +51,13 @@ public class GitService {
     public void createNewWorkspace(String repository, String newWorkspace, String branch) throws GitServiceException {
         gitRepo.deleteLocalRepo(newWorkspace);
         gitRepo.cloneRemoteRepository(repository, newWorkspace, branch);
+        this.createMediaLibrarySharedLink(newWorkspace);  
     }
 
     public void createNewWorkspace(String newWorkspace, String branch) throws GitServiceException {
         gitRepo.deleteLocalRepo(newWorkspace);
         gitRepo.cloneRemoteRepository(newWorkspace, branch);
+        this.createMediaLibrarySharedLink(newWorkspace);
     }
 
     public JsonObject getFileTree(String workspace, String topic, JsonObject filter) throws GitServiceException {
@@ -138,15 +140,7 @@ public class GitService {
 
     public void switchBranch(String workspace, String newBranch) throws GitServiceException {
         gitRepo.switchBranch(workspace, newBranch); 
-        
-        // Create the shared link in the Media Folder.
-        if (mediaLibrarySharedDir != null && mediaLibrarySharedDir.length() > 0) {
-            try {
-                gitRepo.createSymbolicLink(workspace, "MediaLibrary/shared", mediaLibrarySharedDir);
-            } catch (GitServiceException e) {
-                log.error("Unable to create shared link in media library folder: " + e.getMessage());
-            }    
-        }
+        this.createMediaLibrarySharedLink(workspace); 
     }
 
     public void mergeBranch(String workspace, String branch) throws GitServiceException {
@@ -396,6 +390,15 @@ public class GitService {
     public String getLastCommittedFile(String workspace, String filePath) throws GitServiceException {
         return gitRepo.getLastCommittedFile(workspace, filePath);
     }
+
+    private void createMediaLibrarySharedLink(String workspace) {
+        try {
+            gitRepo.createSymbolicLink(workspace, "MediaLibrary/shared", mediaLibrarySharedDir);
+        } catch (GitServiceException e) {
+            log.error("Unable to create shared link in Media Library folder: " + e.getMessage());
+        }   
+    }
+
 
     private String getPath(String topic) throws GitServiceException {
         try {

@@ -56,7 +56,13 @@ public class GitController {
 
                 if (!gitService.doesWorkspaceAlreadyExist(newWorkspace)) {
                     wsService.sendErrorToClient(session, topic, "Creating Workspace", "Please wait while the workspace is created...", INFO_SEVERITY);
-                    gitService.createNewWorkspace(newWorkspace, "master");
+                    String repository = wsService.getRepository(session);
+                    if (repository != null && repository.length() > 0 && 
+                        !newWorkspace.equals("development") && !newWorkspace.equals("test") && !newWorkspace.equals("production")) {
+                        gitService.createNewWorkspace(repository, newWorkspace, "develop");
+                    } else {
+                        gitService.createNewWorkspace(newWorkspace, "master");
+                    }
    
                     //See if we can also checkout the develop branch
                     if (!newWorkspace.equals("production")) {
