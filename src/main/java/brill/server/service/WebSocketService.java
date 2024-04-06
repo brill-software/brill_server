@@ -49,6 +49,7 @@ public class WebSocketService {
     public static String INFO_SEVERITY = "info";
     public static String SUCCESS_SEVERITY = "success";
 
+    private static String REPOSITORY = "repository";
     private static String WORKSPACE = "workspace";
     private static String USERNAME = "username";
     private static String FIRST_NAME = "first_name";
@@ -308,6 +309,26 @@ public class WebSocketService {
     public void setEmail(WebSocketSession session, String email) {
         session.getAttributes().put(EMAIL, email);
     }
+
+    /**
+     * The repository is the repository to use when creating a new private workspace.
+     * 
+     * @param session
+     * @return
+     */
+    public String getRepository(WebSocketSession session) {
+        String email = "";
+        Map<String, Object> map = session.getAttributes();
+        if (map.containsKey(REPOSITORY)) {
+            email = (String) map.get(REPOSITORY);
+        }
+        return email;
+    }  
+
+    public void setRepository(WebSocketSession session, String respository) {
+        session.getAttributes().put(REPOSITORY, respository);
+    }
+
 
     /**
      * The workspace is the location of the git repository workspace from which all 

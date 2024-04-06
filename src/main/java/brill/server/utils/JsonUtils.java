@@ -30,6 +30,8 @@ public class JsonUtils {
     /**
      * The same as calling jsonObj.getString() but also checks that the key exists and that the value is of type STRING
      * 
+     * Returns an empty string when key is NULL.
+     * 
      * @param message
      * @param key
      * @return The string or null.
@@ -41,7 +43,7 @@ public class JsonUtils {
         }
         String jsonType = jsonObj.get(key).getValueType().name();
         if (jsonType.equals("NULL")) {
-            return null;
+            return "";
         }
         if (!jsonType.equals("STRING")) {
             throw new MissingValueException(format("The '%s' field contains a %s. It should contain a STRING.", key, jsonType));
