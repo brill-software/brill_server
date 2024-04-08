@@ -140,6 +140,45 @@ public class WebSocketService {
         }
     }
 
+    /**
+     * Sends a binary message to the client. Currently uses a WebSockets text message and base 64 encoding. 
+     * In the future we could move to using a WebSockets binary message.
+     * 
+     * Note that converting a byte array to a string corrupts the data. So always keep the data in a byte array.
+     * 
+     * @param session The WebSocket session.
+     * @param event Most of the time the event will be 'publish' or 'error'.
+     * @param topic The topic.
+     * @param binaryContent Binray content as a byte[].
+     *      
+     */
+    public void sendBinaryMessageToClient(WebSocketSession session, String event, String topic, byte[] binaryContent) throws WebSocketException {
+        try {
+            JsonObjectBuilder jsonObjBuilder = Json.createObjectBuilder();
+            jsonObjBuilder.add("event", event);
+            jsonObjBuilder.add("topic", topic);
+
+            JsonObjectBuilder contentBuilder = Json.createObjectBuilder();
+            String base64Content = new String(Base64.getEncoder().encode(binaryContent));
+            JsonObject content = contentBuilder.add("base64", base64Content).build();
+
+            jsonObjBuilder.add("content", content);
+
+            JsonObject responseObj = jsonObjBuilder.build();
+            String response = responseObj.toString();
+            if (response.length() > WebSocketConfig.WEB_SOCKET_MAX_MESSAGE_SIZE) {
+                throw new WebSocketException(format("Maximum WebSocket message length of %s exceeded. Length = %s", 
+                    WebSocketConfig.WEB_SOCKET_MAX_MESSAGE_SIZE, response.length()));
+            }
+            session.sendMessage(new TextMessage(response));
+            if (loggingLevel.equals("TRACE")) {
+                log.trace(LogUtils.truncate(responseObj.toString()));
+            }
+        } catch (IOException ioe) {
+            log.warn(format("WebSocket sendMessageToClient exception: %s",ioe.getMessage()));
+        }
+    }
+
     public void sendMessageToClient(WebSocketSession session, String event, String topic, String content, boolean base64EncodeContent) throws WebSocketException {
         sendMessageToClient(session, event, topic, content, base64EncodeContent, false);
     }

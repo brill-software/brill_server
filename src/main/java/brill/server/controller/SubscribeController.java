@@ -53,8 +53,8 @@ public class SubscribeController {
         String topic = "";
         try {
             topic = message.getString("topic");
-            String fileContent = gitService.getFile(wsService.getWorkspace(session), topic);
-            wsService.sendMessageToClient(session, "publish", topic, fileContent, true);
+            byte[] binraryContent = gitService.getBinaryFile(wsService.getWorkspace(session), topic);
+            wsService.sendBinaryMessageToClient(session, "publish", topic, binraryContent);
             wsService.addSubscription(session, topic);
         } catch (Exception e) {
             wsService.sendErrorToClient(session, topic, "Server subscribe error.", e.getMessage());

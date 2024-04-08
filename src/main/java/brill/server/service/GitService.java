@@ -103,6 +103,10 @@ public class GitService {
         return gitRepo.getFile(workspace, getPath(topic));
     }
 
+    public byte[] getBinaryFile(String workspace, String topic) throws GitServiceException {
+        return gitRepo.getBinaryFile(workspace, getPath(topic));
+    }
+
     public String getFileBase64Encoded(String workspace, String topic) throws GitServiceException {
         return gitRepo.getFileBase64Encoded(workspace, getPath(topic));
     }

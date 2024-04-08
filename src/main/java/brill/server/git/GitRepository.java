@@ -533,6 +533,21 @@ public class GitRepository {
         throw new GitServiceException(format("Failed to find file %s", fullPath));
     }
 
+    public byte[] getBinaryFile(String branch, String path) throws GitServiceException {
+        String fullPath = "";
+        try {
+            fullPath = format("%s/%s%s", localRepoDir, branch, path);
+            File file = new File(fullPath);
+            if (file.exists() && file.isFile()) {
+                return Files.readAllBytes(file.toPath());
+            }
+        } catch (IOException ioe) {
+            throw new GitServiceException(format("IOException when reading bytes from %s", fullPath), ioe);
+        }
+
+        throw new GitServiceException(format("Failed to find file %s", fullPath));
+    }
+
     public String getFileBase64Encoded(String branch, String path) throws GitServiceException {
         String fullPath = "";
         try {
