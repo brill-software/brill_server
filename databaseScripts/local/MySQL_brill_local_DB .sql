@@ -215,8 +215,9 @@ CREATE VIEW `session_log_view` AS
         `session_log`.`session_log_id` AS `session_log_id`,
         `session_log`.`session_id` AS `session_id`,
         `session_log`.`start_date_time` AS `start_date_time`,
+        `session_log`.`end_date_time` AS `end_date_time`,
         `session_log`.`session_length` AS `session_length`,
-        `session_log`.`ip_address_id` AS `ip_address_id`,
+        `user_agent`.`mobile` AS `mobile`,
         `ip_address`.`country` AS `country`,
         `ip_address`.`city` AS `city`,
         `session_log`.`visits` AS `visits`,
@@ -225,9 +226,11 @@ CREATE VIEW `session_log_view` AS
         `ip_address`.`org` AS `org`
     FROM
         (`session_log`
-        JOIN `ip_address`)
+        JOIN `ip_address`
+        JOIN `user_agent`)
     WHERE
         ((`session_log`.`ip_address_id` = `ip_address`.`ip_address_id`)
+            AND (`session_log`.`user_agent_id` = `user_agent`.`user_agent_id`)
             AND (`ip_address`.`ignore` <> 'Y'))
     ORDER BY `session_log`.`session_log_id` DESC
 
