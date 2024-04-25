@@ -17,7 +17,8 @@ import brill.server.webSockets.WebSocketManager;
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
  
-    public static int WEB_SOCKET_MAX_MESSAGE_SIZE = 1024 * 1024 * 100; // 100MB
+    // A buffer of size WEB_SOCKET_MAX_MESSAGE_SIZE is allocated everytime a message is received.
+    public static int WEB_SOCKET_MAX_MESSAGE_SIZE = 1024 * 1024 * 50; // 50MB
     public static int WEB_SOCKET_SNED_TIMEOUT_MS = 120 * 1000; // 120 seconds
 
     // Normall only pages servered by the server are allowed to make WebSocket connections. To allow 
